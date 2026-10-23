@@ -1,0 +1,26 @@
+server:
+  port: 8080
+
+spring:
+  profiles:
+    default: h2
+  jackson:
+    time-zone: America/Bogota
+  jpa:
+    open-in-view: false
+    properties:
+      hibernate:
+        physical_naming_strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:QuindioStay2024SecretoDesarrolloSeguro32chars!}
+    expiracion-minutos: ${JWT_EXPIRACION:120}
+  cors:
+    origenes: ${CORS_ORIGENES:http://localhost:4200}

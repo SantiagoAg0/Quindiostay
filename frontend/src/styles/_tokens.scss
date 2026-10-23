@@ -1,0 +1,53 @@
+// ============================================================
+// Tokens de diseño — variables SCSS y propiedades CSS custom
+// Paleta oficial QuindíoStay
+// ============================================================
+
+// --- Variables SCSS ---
+$ink:    #0A0A0A;
+$forest: #0C2418;
+$pine:   #12432A;
+$green:  #1B7F47;
+$leaf:   #47B06C;
+$mint:   #D9F1E0;
+$mist:   #F3F8F4;
+$line:   #E2EAE4;
+$mute:   #5B6B61;
+$white:  #FFFFFF;
+
+// --- Radios de borde ---
+$radius-field: 10px;
+$radius-card:  16px;
+
+// --- Sombras ---
+$shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+$shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+$shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.10);
+
+// --- Transiciones ---
+$transition-fast: 150ms ease;
+$transition-base: 250ms ease;
+
+// --- Propiedades CSS custom (disponibles globalmente) ---
+:root {
+  --ink:    #{$ink};
+  --forest: #{$forest};
+  --pine:   #{$pine};
+  --green:  #{$green};
+  --leaf:   #{$leaf};
+  --mint:   #{$mint};
+  --mist:   #{$mist};
+  --line:   #{$line};
+  --mute:   #{$mute};
+  --white:  #{$white};
+
+  --radius-field: #{$radius-field};
+  --radius-card:  #{$radius-card};
+
+  --shadow-sm: #{$shadow-sm};
+  --shadow-md: #{$shadow-md};
+  --shadow-lg: #{$shadow-lg};
+
+  --transition-fast: #{$transition-fast};
+  --transition-base: #{$transition-base};
+}
