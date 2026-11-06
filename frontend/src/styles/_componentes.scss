@@ -2,6 +2,7 @@
 // Componentes base — botones, inputs, cards
 // ============================================================
 
+@use 'sass:color';
 @use 'tokens' as *;
 
 // --- Botones ---
@@ -32,11 +33,11 @@
     color: $white;
 
     &:hover:not(:disabled) {
-      background-color: darken($green, 6%);
+      background-color: color.adjust($green, $lightness: -6%);
     }
 
     &:active:not(:disabled) {
-      background-color: darken($green, 10%);
+      background-color: color.adjust($green, $lightness: -10%);
     }
   }
 

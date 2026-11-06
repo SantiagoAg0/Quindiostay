@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <button [type]="type" class="btn" [ngClass]="variant" [disabled]="disabled" (click)="click.emit($event)">
+    <button [type]="type" class="btn" [ngClass]="variant" [disabled]="disabled" (click)="alHacerClick.emit($event)">
       <ng-content></ng-content>
     </button>
   `,
@@ -58,5 +58,5 @@ export class BotonComponent {
   @Input() type: 'button' | 'submit' | 'reset' = 'button';
   @Input() variant: 'primary' | 'secondary' | 'danger' | 'dark' = 'primary';
   @Input() disabled = false;
-  @Output() click = new EventEmitter<MouseEvent>();
+  @Output() alHacerClick = new EventEmitter<MouseEvent>();
 }
