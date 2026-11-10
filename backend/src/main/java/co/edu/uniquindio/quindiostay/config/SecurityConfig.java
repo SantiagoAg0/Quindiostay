@@ -31,7 +31,7 @@ public class SecurityConfig {
         http
             .cors(Customizer.withDefaults())
             .csrf(AbstractHttpConfigurer::disable)
-            .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin())) // Para consola H2
+            .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .exceptionHandling(ex -> ex.authenticationEntryPoint((request, response, authException) -> {
                 response.setStatus(401);
@@ -43,6 +43,12 @@ public class SecurityConfig {
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/salidas", "/api/salidas/**", "/api/tours", "/api/tours/**", "/api/guias", "/api/guias/**", "/api/idiomas", "/api/idiomas/**").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/tours-gestion/**", "/api/guias-gestion/**", "/api/prestadores/**", "/api/planes/**").authenticated()
+                .requestMatchers("/api/clientes/mi-perfil").authenticated()
+                .requestMatchers("/api/reservas", "/api/reservas/**").authenticated()
+                .requestMatchers("/api/pagos", "/api/pagos/**").authenticated()
+                .requestMatchers("/api/notificaciones", "/api/notificaciones/**").authenticated()
+                .requestMatchers("/api/usuarios", "/api/usuarios/**").hasRole("ADMINISTRADOR_PLATAFORMA")
                 .requestMatchers("/api/salidas", "/api/salidas/**").hasAnyRole("ADMINISTRADOR_PLATAFORMA", "OPERADOR", "ENCARGADO_PRESTADOR")
                 .requestMatchers("/api/reportes", "/api/reportes/**").hasAnyRole("ADMINISTRADOR_PLATAFORMA", "OPERADOR", "ENCARGADO_PRESTADOR")
                 .anyRequest().authenticated()

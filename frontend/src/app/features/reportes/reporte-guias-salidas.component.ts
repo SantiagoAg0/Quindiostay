@@ -5,11 +5,12 @@ import { RouterModule } from '@angular/router';
 import { ReportesService } from './reportes.service';
 import { GuiaSalidasFila } from '../../core/models/reporte-guias.model';
 import { BotonComponent } from '../../shared/boton/boton.component';
+import { IconComponent } from '../../shared/icon/icon.component';
 
 @Component({
   selector: 'app-reporte-guias-salidas',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, BotonComponent],
+  imports: [CommonModule, FormsModule, RouterModule, BotonComponent, IconComponent],
   template: `
     <div class="reporte-page">
       <div class="report-header">
@@ -39,8 +40,8 @@ import { BotonComponent } from '../../shared/boton/boton.component';
           Generar reporte
         </app-boton>
 
-        <button class="btn-pdf-disabled" title="Disponible en la Entrega 3" disabled>
-          📄 Exportar a PDF (Próximamente)
+        <button class="btn-pdf-disabled" title="Disponible en el índice de reportes con OpenPDF" disabled>
+          <app-icon name="file-text" [size]="16"></app-icon> Exportar a PDF
         </button>
       </div>
 

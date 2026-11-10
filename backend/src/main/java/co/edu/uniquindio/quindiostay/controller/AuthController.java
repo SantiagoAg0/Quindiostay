@@ -25,6 +25,12 @@ public class AuthController {
         return ResponseEntity.ok(authService.login(request));
     }
 
+    @PostMapping("/registro-cliente")
+    @Operation(summary = "Registrar nueva cuenta de Cliente con su perfil y preferencias")
+    public ResponseEntity<LoginResponse> registroCliente(@Valid @RequestBody co.edu.uniquindio.quindiostay.dto.auth.RegistroClienteRequest request) {
+        return ResponseEntity.ok(authService.registrarCliente(request));
+    }
+
     @GetMapping("/me")
     @Operation(summary = "Obtener datos del usuario actualmente autenticado")
     public ResponseEntity<UsuarioActualResponse> me() {

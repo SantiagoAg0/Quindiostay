@@ -7,5 +7,8 @@ public enum TipoDocumento {
     CC,
     CE,
     PASAPORTE,
-    TI
+    TI,
+    CEDULA_CIUDADANIA,
+    CEDULA_EXTRANJERIA,
+    TARJETA_IDENTIDAD
 }

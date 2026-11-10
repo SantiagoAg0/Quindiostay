@@ -5,5 +5,9 @@ package co.edu.uniquindio.quindiostay.domain.enums;
  */
 public enum IdiomaPreferido {
     ESPAÑOL,
-    INGLES
+    ESPANOL,
+    INGLES,
+    FRANCES,
+    ALEMAN,
+    PORTUGUES
 }

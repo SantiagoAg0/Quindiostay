@@ -1,17 +1,20 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
+import { IconComponent } from '../../shared/icon/icon.component';
 
 @Component({
   selector: 'app-placeholder',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, IconComponent],
   template: `
     <div class="placeholder-page">
       <div class="card">
-        <span class="icon">🚧</span>
+        <div class="icon-wrap" style="color: #10b981;">
+          <app-icon name="shield" [size]="48"></app-icon>
+        </div>
         <h2>Módulo en construcción</h2>
-        <p>Esta sección formará parte de la <strong>Entrega 3</strong> del proyecto de Bases de Datos I.</p>
+        <p>Esta sección formará parte de la plataforma QuindíoStay de Bases de Datos I.</p>
       </div>
     </div>
   `,
@@ -22,15 +25,17 @@ import { ActivatedRoute } from '@angular/router';
       padding: 60px 20px;
     }
     .card {
-      background: var(--white);
-      border: 1px solid var(--line);
-      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(11, 45, 31, 0.1);
+      border-radius: 20px;
       padding: 48px;
       text-align: center;
       max-width: 480px;
-      .icon { font-size: 3rem; margin-bottom: 16px; display: block; }
-      h2 { color: var(--ink); margin: 0 0 10px; }
-      p { color: var(--mute); margin: 0; line-height: 1.5; }
+      box-shadow: 0 10px 30px rgba(11, 45, 31, 0.08);
+      .icon-wrap { margin-bottom: 20px; display: inline-flex; }
+      h2 { color: #0B2D1F; margin: 0 0 10px; font-family: var(--font-heading); font-size: 1.5rem; }
+      p { color: #64748b; margin: 0; line-height: 1.6; }
     }
   `]
 })

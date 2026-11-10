@@ -3,67 +3,64 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
+import { IconComponent } from '../../../shared/icon/icon.component';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, IconComponent],
   template: `
     <div class="login-wrapper">
-      <!-- Panel Izquierdo: Verde Oscuro / Palmas de Cera -->
+      <!-- Panel Izquierdo: Ilustración Premium de la Cordillera Central y Palmas de Cera -->
       <div class="brand-panel">
         <div class="brand-header">
-          <span class="brand-logo">🌿</span>
+          <div class="brand-logo-icon">
+            <app-icon name="mountain" [size]="24" customClass="text-emerald"></app-icon>
+          </div>
           <span class="brand-name">QuindíoStay</span>
         </div>
 
-        <div class="brand-illustration">
-          <!-- Ilustración SVG: Palmas de Cera del Valle del Cocora -->
-          <svg viewBox="0 0 400 320" class="palm-svg" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <ellipse cx="200" cy="300" rx="190" ry="40" fill="#12432A" opacity="0.6"/>
-            <!-- Montañas de fondo -->
-            <path d="M20 280 Q 120 180 220 280" fill="#12432A" opacity="0.3"/>
-            <path d="M160 280 Q 280 160 380 280" fill="#12432A" opacity="0.4"/>
-            <!-- Palma Izquierda -->
-            <path d="M110 280 Q 112 180 114 90" stroke="#47B06C" stroke-width="4" stroke-linecap="round"/>
-            <circle cx="114" cy="85" r="5" fill="#47B06C"/>
-            <path d="M114 85 Q 90 60 70 75" stroke="#47B06C" stroke-width="2.5" fill="none"/>
-            <path d="M114 85 Q 85 80 65 95" stroke="#47B06C" stroke-width="2.5" fill="none"/>
-            <path d="M114 85 Q 110 50 114 40" stroke="#47B06C" stroke-width="2.5" fill="none"/>
-            <path d="M114 85 Q 135 60 155 70" stroke="#47B06C" stroke-width="2.5" fill="none"/>
-            <path d="M114 85 Q 140 85 160 100" stroke="#47B06C" stroke-width="2.5" fill="none"/>
-            <!-- Palma Central Alta -->
-            <path d="M200 285 Q 198 160 200 50" stroke="#D9F1E0" stroke-width="5" stroke-linecap="round"/>
-            <circle cx="200" cy="45" r="6" fill="#D9F1E0"/>
-            <path d="M200 45 Q 165 20 145 35" stroke="#D9F1E0" stroke-width="3" fill="none"/>
-            <path d="M200 45 Q 160 45 135 60" stroke="#D9F1E0" stroke-width="3" fill="none"/>
-            <path d="M200 45 Q 200 10 200 0" stroke="#D9F1E0" stroke-width="3" fill="none"/>
-            <path d="M200 45 Q 235 20 255 35" stroke="#D9F1E0" stroke-width="3" fill="none"/>
-            <path d="M200 45 Q 240 50 265 65" stroke="#D9F1E0" stroke-width="3" fill="none"/>
-            <!-- Palma Derecha -->
-            <path d="M290 280 Q 288 170 286 110" stroke="#1B7F47" stroke-width="4" stroke-linecap="round"/>
-            <circle cx="286" cy="105" r="5" fill="#1B7F47"/>
-            <path d="M286 105 Q 265 85 250 95" stroke="#1B7F47" stroke-width="2.5" fill="none"/>
-            <path d="M286 105 Q 285 75 286 65" stroke="#1B7F47" stroke-width="2.5" fill="none"/>
-            <path d="M286 105 Q 310 85 325 100" stroke="#1B7F47" stroke-width="2.5" fill="none"/>
-            <!-- Aves -->
-            <path d="M140 120 Q 145 115 150 120 Q 155 115 160 120" stroke="#D9F1E0" stroke-width="1.5" fill="none" opacity="0.6"/>
-            <path d="M240 100 Q 244 96 248 100 Q 252 96 256 100" stroke="#D9F1E0" stroke-width="1.5" fill="none" opacity="0.6"/>
-          </svg>
+        <div class="brand-hero">
+          <span class="hero-badge">Turismo & Naturaleza</span>
+          <h1 class="hero-title">Explora la magia del Eje Cafetero</h1>
+          <p class="hero-subtitle">
+            Plataforma integral de gestión turística, salidas de ecoturismo, guianza certificada y reservas seguras en los 12 municipios del Quindío.
+          </p>
+
+          <div class="features-list">
+            <div class="feature-item">
+              <div class="feature-icon">
+                <app-icon name="check" [size]="14"></app-icon>
+              </div>
+              <span>Guías bilingües profesionales con tarjeta acreditada</span>
+            </div>
+            <div class="feature-item">
+              <div class="feature-icon">
+                <app-icon name="check" [size]="14"></app-icon>
+              </div>
+              <span>Control riguroso de cupos y edades por tour</span>
+            </div>
+            <div class="feature-item">
+              <div class="feature-icon">
+                <app-icon name="check" [size]="14"></app-icon>
+              </div>
+              <span>Pagos en línea y recordatorios automáticos multicanal</span>
+            </div>
+          </div>
         </div>
 
         <div class="brand-quote">
           <p class="quote-text">"Cada salida, con su cupo y su guía confirmados."</p>
-          <span class="quote-author">Turismo y Naturaleza en el Corazón del Eje Cafetero</span>
+          <span class="quote-sub">Universidad del Quindío · Bases de Datos I</span>
         </div>
       </div>
 
-      <!-- Panel Derecho: Formulario de Inicio de Sesión -->
+      <!-- Panel Derecho: Formulario de Autenticación y Registro -->
       <div class="form-panel">
-        <div class="form-card">
+        <div class="form-card animate-slide-up">
           <div class="form-header">
             <h2>Bienvenido a QuindíoStay</h2>
-            <p>Ingresa a tu cuenta para gestionar salidas, reservas y guías.</p>
+            <p>Accede con tus credenciales o crea tu cuenta de viajero.</p>
           </div>
 
           <!-- Selector de tipo de ingreso -->
@@ -73,33 +70,45 @@ import { AuthService } from '../../../core/auth/auth.service';
               class="tab-btn"
               [class.active]="tipoIngreso === 'PERSONAL'"
               (click)="cambiarTipo('PERSONAL')">
-              Personal del sistema
+              <app-icon name="shield" [size]="16"></app-icon>
+              <span>Personal Interno</span>
             </button>
             <button
               type="button"
               class="tab-btn"
               [class.active]="tipoIngreso === 'CLIENTE'"
               (click)="cambiarTipo('CLIENTE')">
-              Cliente
+              <app-icon name="user" [size]="16"></app-icon>
+              <span>Cliente / Viajero</span>
             </button>
           </div>
 
           <!-- Alerta de error -->
-          <div *ngIf="errorMensaje" class="error-alert">
-            <span class="alert-icon">⚠️</span>
+          <div *ngIf="errorMensaje" class="error-alert animate-fade-in">
+            <app-icon name="alert" [size]="18"></app-icon>
             <span>{{ errorMensaje }}</span>
           </div>
 
+          <!-- Mensaje de éxito -->
+          <div *ngIf="exitoMensaje" class="success-alert animate-fade-in">
+            <app-icon name="check" [size]="18"></app-icon>
+            <span>{{ exitoMensaje }}</span>
+          </div>
+
+          <!-- FORMULARIO DE LOGIN -->
           <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
             <div class="form-group">
               <label class="form-label">
                 {{ tipoIngreso === 'PERSONAL' ? 'Usuario del sistema' : 'Correo electrónico' }}
               </label>
-              <input
-                type="text"
-                class="form-input"
-                [placeholder]="tipoIngreso === 'PERSONAL' ? 'Ej: admin u operador' : 'cliente@correo.com'"
-                formControlName="identificador" />
+              <div class="input-with-icon">
+                <app-icon [name]="tipoIngreso === 'PERSONAL' ? 'user' : 'search'" [size]="16" class="input-icon"></app-icon>
+                <input
+                  type="text"
+                  class="form-input"
+                  [placeholder]="tipoIngreso === 'PERSONAL' ? 'Ej: admin u operador' : 'cliente@correo.com'"
+                  formControlName="identificador" />
+              </div>
               <span *ngIf="loginForm.get('identificador')?.touched && loginForm.get('identificador')?.invalid" class="field-error">
                 Este campo es obligatorio
               </span>
@@ -107,34 +116,165 @@ import { AuthService } from '../../../core/auth/auth.service';
 
             <div class="form-group">
               <label class="form-label">Contraseña</label>
-              <input
-                type="password"
-                class="form-input"
-                placeholder="••••••••"
-                formControlName="contrasena" />
+              <div class="input-with-icon">
+                <app-icon name="shield" [size]="16" class="input-icon"></app-icon>
+                <input
+                  type="password"
+                  class="form-input"
+                  placeholder="••••••••"
+                  formControlName="contrasena" />
+              </div>
               <span *ngIf="loginForm.get('contrasena')?.touched && loginForm.get('contrasena')?.invalid" class="field-error">
                 La contraseña es obligatoria
               </span>
             </div>
 
             <button type="submit" class="submit-btn" [disabled]="loginForm.invalid || cargando">
-              <span *ngIf="!cargando">Ingresar</span>
-              <span *ngIf="cargando">Iniciando sesión...</span>
+              <span *ngIf="cargando" class="spinner"></span>
+              <span *ngIf="!cargando">Ingresar al Sistema</span>
+              <app-icon *ngIf="!cargando" name="chevron-right" [size]="16"></app-icon>
             </button>
           </form>
 
           <div class="form-footer">
-            <button type="button" class="btn-link" (click)="crearCuentaCliente()">
-              ¿Eres nuevo? Crear cuenta de cliente
+            <button type="button" class="btn-link" (click)="abrirModalRegistro()">
+              ¿Aún no tienes cuenta? <strong>Regístrate como Cliente</strong>
             </button>
           </div>
 
-          <!-- Credenciales sugeridas para evaluación -->
-          <div class="credentials-hint">
-            <span class="hint-title">Credenciales de desarrollo:</span>
-            <code>admin / Admin123*</code> · <code>operador / Operador123*</code> · <code>cliente&#64;correo.com / Cliente123*</code>
+          <!-- Credenciales Rápidas para Evaluación -->
+          <div class="credentials-box">
+            <div class="credentials-title">Accesos Rápidos de Demostración:</div>
+            <div class="chips-container">
+              <button type="button" class="cred-chip" (click)="autocompletar('admin', 'Admin123*', 'PERSONAL')">
+                <span class="chip-dot dot-admin"></span> Admin
+              </button>
+              <button type="button" class="cred-chip" (click)="autocompletar('operador', 'Operador123*', 'PERSONAL')">
+                <span class="chip-dot dot-operador"></span> Operador
+              </button>
+              <button type="button" class="cred-chip" (click)="autocompletar('encargado', 'Encargado123*', 'PERSONAL')">
+                <span class="chip-dot dot-encargado"></span> Encargado
+              </button>
+              <button type="button" class="cred-chip" (click)="autocompletar('cliente@correo.com', 'Cliente123*', 'CLIENTE')">
+                <span class="chip-dot dot-cliente"></span> Cliente
+              </button>
+            </div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- MODAL DE REGISTRO DE CLIENTE -->
+    <div class="modal-backdrop animate-fade-in" *ngIf="mostrarRegistroModal">
+      <div class="modal-card animate-slide-up">
+        <div class="modal-header">
+          <div>
+            <h3>Crear Cuenta de Cliente</h3>
+            <p class="modal-subtitle">Regístrate para reservar salidas turísticas y configurar tus preferencias.</p>
+          </div>
+          <button type="button" class="btn-close" (click)="cerrarModalRegistro()">
+            <app-icon name="x" [size]="20"></app-icon>
+          </button>
+        </div>
+
+        <form [formGroup]="registroForm" (ngSubmit)="onRegistroSubmit()">
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Nombres *</label>
+              <input type="text" class="form-input" placeholder="Ej: Santiago" formControlName="nombres" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Apellidos *</label>
+              <input type="text" class="form-input" placeholder="Ej: Aguirre Osorio" formControlName="apellidos" />
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Tipo de Documento *</label>
+              <select class="form-select" formControlName="tipoDocumento">
+                <option value="CEDULA_CIUDADANIA">Cédula de Ciudadanía</option>
+                <option value="PASAPORTE">Pasaporte</option>
+                <option value="CEDULA_EXTRANJERIA">Cédula de Extranjería</option>
+                <option value="TARJETA_IDENTIDAD">Tarjeta de Identidad</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Número de Documento *</label>
+              <input type="text" class="form-input" placeholder="Ej: 1094900123" formControlName="numeroDocumento" />
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Correo Electrónico *</label>
+              <input type="email" class="form-input" placeholder="tucorreo@dominio.com" formControlName="correo" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Teléfono</label>
+              <input type="text" class="form-input" placeholder="Ej: 3101234567" formControlName="telefono" />
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Ciudad de Origen</label>
+              <input type="text" class="form-input" placeholder="Ej: Armenia, Bogotá, Medellín" formControlName="ciudadOrigen" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Contraseña de Acceso *</label>
+              <input type="password" class="form-input" placeholder="Mínimo 6 caracteres" formControlName="contrasena" />
+            </div>
+          </div>
+
+          <div class="modal-section-title">Preferencias de Perfil (RN13 / RN15 / RN16)</div>
+
+          <div class="form-grid-3">
+            <div class="form-group">
+              <label class="form-label">Idioma Preferido</label>
+              <select class="form-select" formControlName="idiomaPreferido">
+                <option value="ESPANOL">Español</option>
+                <option value="INGLES">Inglés</option>
+                <option value="FRANCES">Francés</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Canal Notificaciones</label>
+              <select class="form-select" formControlName="canalPreferido">
+                <option value="CORREO">Correo Electrónico</option>
+                <option value="WHATSAPP">WhatsApp</option>
+                <option value="SMS">SMS</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Recordatorios (Anticipación)</label>
+              <select class="form-select" formControlName="anticipacionDias">
+                <option [ngValue]="1">1 día antes</option>
+                <option [ngValue]="3">3 días antes</option>
+                <option [ngValue]="7">7 días antes</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="checkbox-row">
+            <input type="checkbox" id="aceptaPromo" formControlName="aceptaPromocionesBool" />
+            <label for="aceptaPromo">Deseo recibir promociones y novedades sobre tours en el Quindío</label>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" (click)="cerrarModalRegistro()">Cancelar</button>
+            <button type="submit" class="btn btn-primary" [disabled]="registroForm.invalid || registrando">
+              <span *ngIf="registrando" class="spinner"></span>
+              <span *ngIf="!registrando">Crear Cuenta e Iniciar Sesión</span>
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   `,
@@ -142,177 +282,525 @@ import { AuthService } from '../../../core/auth/auth.service';
     .login-wrapper {
       display: flex;
       min-height: 100vh;
-      background: var(--mist);
+      background: #071911;
     }
+
+    // Panel Izquierdo
     .brand-panel {
-      flex: 1;
-      background: var(--forest);
-      color: var(--white);
-      padding: 48px;
+      flex: 1.1;
+      background: linear-gradient(135deg, #071911 0%, #0B2D1F 50%, #082418 100%);
+      color: #FFFFFF;
+      padding: 60px 50px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       position: relative;
       overflow: hidden;
-      @media (max-width: 900px) { display: none; }
+      border-right: 1px solid rgba(255, 255, 255, 0.08);
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: -20%;
+        left: -20%;
+        width: 70%;
+        height: 70%;
+        background: radial-gradient(circle, rgba(16, 185, 129, 0.18) 0%, transparent 70%);
+        pointer-events: none;
+      }
     }
+
     .brand-header {
       display: flex;
       align-items: center;
-      gap: 12px;
-      .brand-logo { font-size: 2rem; }
-      .brand-name { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; }
-    }
-    .brand-illustration {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 24px 0;
-      .palm-svg { max-width: 380px; width: 100%; height: auto; }
-    }
-    .brand-quote {
-      .quote-text {
-        font-size: 1.25rem;
-        font-weight: 600;
-        line-height: 1.4;
-        color: var(--mint);
-        margin: 0 0 8px;
-        letter-spacing: -0.01em;
+      gap: 14px;
+      position: relative;
+      z-index: 2;
+
+      .brand-logo-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: rgba(16, 185, 129, 0.2);
+        border: 1px solid rgba(16, 185, 129, 0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #10B981;
+        box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
       }
-      .quote-author { font-size: 0.875rem; color: #9CA3AF; }
+
+      .brand-name {
+        font-family: var(--font-heading, 'Outfit', sans-serif);
+        font-size: 1.5rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        color: #FFFFFF;
+      }
     }
-    .form-panel {
-      flex: 1.1;
+
+    .brand-hero {
+      margin: 40px 0;
+      position: relative;
+      z-index: 2;
+
+      .hero-badge {
+        display: inline-block;
+        padding: 5px 14px;
+        background: rgba(16, 185, 129, 0.15);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        border-radius: 999px;
+        color: #34D399;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 20px;
+      }
+
+      .hero-title {
+        font-family: var(--font-heading, 'Outfit', sans-serif);
+        font-size: 2.75rem;
+        font-weight: 800;
+        line-height: 1.15;
+        letter-spacing: -0.03em;
+        color: #FFFFFF;
+        margin-bottom: 18px;
+      }
+
+      .hero-subtitle {
+        font-size: 1.0625rem;
+        color: #D1D5DB;
+        line-height: 1.6;
+        max-width: 480px;
+        margin-bottom: 30px;
+      }
+    }
+
+    .features-list {
       display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 32px;
-    }
-    .form-card {
-      width: 100%;
-      max-width: 440px;
-      background: var(--white);
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      padding: 36px 32px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
-    }
-    .form-header {
-      margin-bottom: 24px;
-      h2 { font-size: 1.5rem; font-weight: 700; color: var(--ink); margin: 0 0 6px; letter-spacing: -0.02em; }
-      p { font-size: 0.875rem; color: var(--mute); margin: 0; }
-    }
-    .tab-selector {
-      display: flex;
-      background: var(--mist);
-      border-radius: 10px;
-      padding: 4px;
-      margin-bottom: 20px;
-      .tab-btn {
-        flex: 1;
-        padding: 8px 12px;
-        font-size: 0.8125rem;
-        font-weight: 600;
-        border: none;
-        border-radius: 8px;
-        background: transparent;
-        color: var(--mute);
-        cursor: pointer;
-        transition: all 0.2s;
-        font-family: inherit;
-        &.active {
-          background: var(--white);
-          color: var(--green);
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      flex-direction: column;
+      gap: 14px;
+
+      .feature-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: #E5E7EB;
+        font-size: 0.9375rem;
+
+        .feature-icon {
+          width: 24px;
+          height: 24px;
+          border-radius: 6px;
+          background: rgba(16, 185, 129, 0.2);
+          color: #34D399;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
       }
     }
+
+    .brand-quote {
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      padding-top: 24px;
+      position: relative;
+      z-index: 2;
+
+      .quote-text {
+        font-family: var(--font-heading, 'Outfit', sans-serif);
+        font-size: 1.125rem;
+        font-weight: 600;
+        font-style: italic;
+        color: #A7F3D0;
+        margin-bottom: 4px;
+      }
+
+      .quote-sub {
+        font-size: 0.8125rem;
+        color: #9CA3AF;
+      }
+    }
+
+    // Panel Derecho
+    .form-panel {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      background: radial-gradient(circle at center, #0C2117 0%, #071911 100%);
+    }
+
+    .form-card {
+      width: 100%;
+      max-width: 440px;
+      background: rgba(16, 28, 22, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 24px;
+      padding: 40px 36px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 30px rgba(16, 185, 129, 0.1);
+      color: #FFFFFF;
+    }
+
+    .form-header {
+      margin-bottom: 24px;
+
+      h2 {
+        font-family: var(--font-heading, 'Outfit', sans-serif);
+        font-size: 1.625rem;
+        font-weight: 700;
+        color: #FFFFFF;
+        letter-spacing: -0.02em;
+        margin-bottom: 6px;
+      }
+
+      p {
+        font-size: 0.875rem;
+        color: #9CA3AF;
+        margin: 0;
+      }
+    }
+
+    .tab-selector {
+      display: flex;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 4px;
+      border-radius: 12px;
+      margin-bottom: 22px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+
+      .tab-btn {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 9px 12px;
+        font-family: var(--font-body, 'Plus Jakarta Sans', sans-serif);
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: #9CA3AF;
+        background: transparent;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+
+        &.active {
+          background: rgba(16, 185, 129, 0.2);
+          border: 1px solid rgba(16, 185, 129, 0.35);
+          color: #FFFFFF;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+      }
+    }
+
     .error-alert {
       display: flex;
       align-items: center;
       gap: 10px;
-      background: #FEE2E2;
-      border: 1px solid #FCA5A5;
-      color: #B91C1C;
-      padding: 10px 14px;
+      padding: 12px 14px;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #FCA5A5;
       border-radius: 10px;
-      font-size: 0.875rem;
-      margin-bottom: 20px;
+      font-size: 0.8125rem;
+      margin-bottom: 18px;
     }
+
+    .success-alert {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #6EE7B7;
+      border-radius: 10px;
+      font-size: 0.8125rem;
+      margin-bottom: 18px;
+    }
+
     .form-group {
       margin-bottom: 18px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    .form-label {
-      font-size: 0.875rem;
-      font-weight: 600;
-      color: var(--ink);
-    }
-    .form-input {
-      padding: 10px 14px;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      font-size: 0.9375rem;
-      font-family: inherit;
-      color: var(--ink);
-      transition: border-color 0.2s, box-shadow 0.2s;
-      &:focus {
-        outline: none;
-        border-color: var(--green);
-        box-shadow: 0 0 0 3px rgba(27, 127, 71, 0.12);
+
+      .form-label {
+        display: block;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: #D1D5DB;
+        margin-bottom: 6px;
+      }
+
+      .input-with-icon {
+        position: relative;
+        display: flex;
+        align-items: center;
+
+        .input-icon {
+          position: absolute;
+          left: 14px;
+          color: #9CA3AF;
+          pointer-events: none;
+        }
+
+        .form-input {
+          width: 100%;
+          padding: 12px 14px 12px 40px;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          border-radius: 12px;
+          color: #FFFFFF;
+          font-size: 0.875rem;
+          outline: none;
+          transition: all 0.2s;
+
+          &:focus {
+            border-color: #10B981;
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+          }
+
+          &::placeholder {
+            color: #6B7280;
+          }
+        }
+      }
+
+      .field-error {
+        display: block;
+        color: #F87171;
+        font-size: 0.75rem;
+        margin-top: 4px;
       }
     }
-    .field-error {
-      font-size: 0.75rem;
-      color: #DC2626;
-      font-weight: 500;
-    }
+
     .submit-btn {
       width: 100%;
-      padding: 12px;
-      background: var(--green);
-      color: var(--white);
-      border: none;
-      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 13px;
+      background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+      color: #FFFFFF;
+      font-family: var(--font-body, 'Plus Jakarta Sans', sans-serif);
       font-size: 0.9375rem;
-      font-weight: 600;
+      font-weight: 700;
+      border: none;
+      border-radius: 12px;
       cursor: pointer;
-      font-family: inherit;
-      margin-top: 8px;
-      transition: background 0.2s;
-      &:hover:not(:disabled) { background: #156637; }
-      &:disabled { opacity: 0.6; cursor: not-allowed; }
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 18px rgba(16, 185, 129, 0.35);
+
+      &:hover:not(:disabled) {
+        transform: translateY(-2px) scale(1.01);
+        box-shadow: 0 8px 24px rgba(16, 185, 129, 0.45);
+        background: linear-gradient(135deg, #34D399 0%, #10B981 100%);
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
     }
+
     .form-footer {
       text-align: center;
-      margin-top: 18px;
+      margin-top: 20px;
+
       .btn-link {
         background: none;
         border: none;
-        color: var(--green);
-        font-size: 0.875rem;
-        font-weight: 500;
+        color: #A7F3D0;
+        font-size: 0.8125rem;
         cursor: pointer;
-        &:hover { text-decoration: underline; }
+        transition: color 0.2s;
+
+        &:hover {
+          color: #FFFFFF;
+          text-decoration: underline;
+        }
       }
     }
-    .credentials-hint {
+
+    .credentials-box {
       margin-top: 24px;
-      padding-top: 16px;
-      border-top: 1px dashed var(--line);
-      font-size: 0.75rem;
-      color: var(--mute);
-      text-align: center;
-      .hint-title { display: block; font-weight: 600; margin-bottom: 4px; color: var(--ink); }
-      code {
-        background: var(--mist);
-        padding: 2px 5px;
-        border-radius: 4px;
-        font-family: monospace;
-        color: var(--pine);
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+
+      .credentials-title {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #9CA3AF;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 10px;
       }
+
+      .chips-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+
+        .cred-chip {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 12px;
+          background: rgba(255, 255, 255, 0.06);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 20px;
+          color: #E5E7EB;
+          font-size: 0.75rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s;
+
+          &:hover {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: #10B981;
+            transform: translateY(-1px);
+          }
+
+          .chip-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+
+            &.dot-admin { background: #10B981; }
+            &.dot-operador { background: #3B82F6; }
+            &.dot-encargado { background: #F59E0B; }
+            &.dot-cliente { background: #A855F7; }
+          }
+        }
+      }
+    }
+
+    // Modal de Registro
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 20px;
+    }
+
+    .modal-card {
+      width: 100%;
+      max-width: 640px;
+      max-height: 90vh;
+      overflow-y: auto;
+      background: #0E1A14;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 24px;
+      padding: 32px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
+      color: #FFFFFF;
+
+      &::-webkit-scrollbar {
+        width: 6px;
+      }
+      &::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 3px;
+      }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 24px;
+
+      h3 {
+        font-family: var(--font-heading, 'Outfit', sans-serif);
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #FFFFFF;
+        margin-bottom: 4px;
+      }
+
+      .modal-subtitle {
+        font-size: 0.875rem;
+        color: #9CA3AF;
+        margin: 0;
+      }
+
+      .btn-close {
+        background: transparent;
+        border: none;
+        color: #9CA3AF;
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 6px;
+        transition: color 0.2s;
+
+        &:hover {
+          color: #FFFFFF;
+          background: rgba(255, 255, 255, 0.1);
+        }
+      }
+    }
+
+    .form-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .form-grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+    }
+
+    .modal-section-title {
+      font-size: 0.8125rem;
+      font-weight: 700;
+      color: #34D399;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin: 16px 0 12px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 18px 0 24px;
+
+      input[type="checkbox"] {
+        accent-color: #10B981;
+        width: 18px;
+        height: 18px;
+      }
+
+      label {
+        font-size: 0.8125rem;
+        color: #D1D5DB;
+        cursor: pointer;
+      }
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
     }
   `]
 })
@@ -322,22 +810,45 @@ export class LoginComponent {
   private router = inject(Router);
 
   tipoIngreso: 'PERSONAL' | 'CLIENTE' = 'PERSONAL';
-  errorMensaje: string | null = null;
   cargando = false;
+  registrando = false;
+  errorMensaje: string | null = null;
+  exitoMensaje: string | null = null;
+  mostrarRegistroModal = false;
 
   loginForm = this.fb.group({
-    identificador: ['admin', [Validators.required]],
-    contrasena: ['Admin123*', [Validators.required]]
+    identificador: ['', Validators.required],
+    contrasena: ['', Validators.required]
+  });
+
+  registroForm = this.fb.group({
+    nombres: ['', Validators.required],
+    apellidos: ['', Validators.required],
+    tipoDocumento: ['CEDULA_CIUDADANIA', Validators.required],
+    numeroDocumento: ['', Validators.required],
+    correo: ['', [Validators.required, Validators.email]],
+    telefono: [''],
+    ciudadOrigen: [''],
+    contrasena: ['', [Validators.required, Validators.minLength(6)]],
+    idiomaPreferido: ['ESPANOL'],
+    canalPreferido: ['CORREO'],
+    anticipacionDias: [3],
+    aceptaPromocionesBool: [true]
   });
 
   cambiarTipo(tipo: 'PERSONAL' | 'CLIENTE'): void {
     this.tipoIngreso = tipo;
     this.errorMensaje = null;
-    if (tipo === 'PERSONAL') {
-      this.loginForm.patchValue({ identificador: 'admin', contrasena: 'Admin123*' });
-    } else {
-      this.loginForm.patchValue({ identificador: 'cliente@correo.com', contrasena: 'Cliente123*' });
-    }
+    this.loginForm.reset();
+  }
+
+  autocompletar(user: string, pass: string, tipo: 'PERSONAL' | 'CLIENTE'): void {
+    this.tipoIngreso = tipo;
+    this.errorMensaje = null;
+    this.loginForm.patchValue({
+      identificador: user,
+      contrasena: pass
+    });
   }
 
   onSubmit(): void {
@@ -359,17 +870,61 @@ export class LoginComponent {
       error: (err) => {
         this.cargando = false;
         if (err.status === 401) {
-          this.errorMensaje = err.error?.mensaje || 'Usuario o contraseña incorrectos';
+          this.errorMensaje = err.error?.mensaje || 'Credenciales incorrectas';
         } else if (err.status === 403) {
           this.errorMensaje = 'Usuario bloqueado';
         } else {
-          this.errorMensaje = err.error?.mensaje || 'Error al iniciar sesión';
+          this.errorMensaje = err.error?.mensaje || 'Error al conectar con el servidor';
         }
       }
     });
   }
 
-  crearCuentaCliente(): void {
-    alert('El registro público de clientes estará habilitado en la Entrega 3.');
+  abrirModalRegistro(): void {
+    this.mostrarRegistroModal = true;
+  }
+
+  cerrarModalRegistro(): void {
+    this.mostrarRegistroModal = false;
+    this.registroForm.reset({
+      tipoDocumento: 'CEDULA_CIUDADANIA',
+      idiomaPreferido: 'ESPANOL',
+      canalPreferido: 'CORREO',
+      anticipacionDias: 3,
+      aceptaPromocionesBool: true
+    });
+  }
+
+  onRegistroSubmit(): void {
+    if (this.registroForm.invalid) return;
+
+    this.registrando = true;
+    this.errorMensaje = null;
+
+    const v = this.registroForm.value;
+    this.authService.registroCliente({
+      nombres: v.nombres!,
+      apellidos: v.apellidos!,
+      tipoDocumento: v.tipoDocumento!,
+      numeroDocumento: v.numeroDocumento!,
+      correo: v.correo!,
+      telefono: v.telefono || undefined,
+      ciudadOrigen: v.ciudadOrigen || undefined,
+      contrasena: v.contrasena!,
+      idiomaPreferido: v.idiomaPreferido || 'ESPANOL',
+      canalPreferido: v.canalPreferido || 'CORREO',
+      anticipacionDias: v.anticipacionDias || 3,
+      aceptaPromociones: v.aceptaPromocionesBool ? 'SI' : 'NO'
+    }).subscribe({
+      next: () => {
+        this.registrando = false;
+        this.mostrarRegistroModal = false;
+        this.router.navigate(['/salidas']);
+      },
+      error: (err) => {
+        this.registrando = false;
+        this.errorMensaje = err.error?.mensaje || 'Error al registrar cliente';
+      }
+    });
   }
 }

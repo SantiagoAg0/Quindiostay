@@ -53,7 +53,19 @@ export class SalidasService {
     return this.http.post<SalidaTour>(`${this.apiUrl}/${id}/cancelar`, {});
   }
 
-  // Catálogos
+  // Catálogos y aliases
+  listar(filtros?: any): Observable<PaginaResponse<SalidaTour>> {
+    return this.buscar(filtros || {});
+  }
+
+  listarToursResumen(): Observable<TourResumen[]> {
+    return this.listarTours();
+  }
+
+  listarGuiasResumen(): Observable<GuiaResumen[]> {
+    return this.listarGuias();
+  }
+
   listarTours(): Observable<TourResumen[]> {
     return this.http.get<TourResumen[]>('/api/tours');
   }

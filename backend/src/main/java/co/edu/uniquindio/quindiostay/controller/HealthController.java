@@ -23,8 +23,9 @@ public class HealthController {
     @Operation(summary = "Verificar estado del servicio")
     public ResponseEntity<Map<String, String>> health() {
         String[] perfiles = env.getActiveProfiles();
-        String perfil = perfiles.length > 0 ? perfiles[0] : "h2";
-        String bd = Arrays.asList(perfiles).contains("mysql") ? "MySQL" : "H2";
+        String perfil = perfiles.length > 0 ? perfiles[0] : (env.getDefaultProfiles().length > 0 ? env.getDefaultProfiles()[0] : "h2");
+        boolean esMysql = Arrays.asList(perfiles).contains("mysql") || (perfiles.length == 0 && Arrays.asList(env.getDefaultProfiles()).contains("mysql"));
+        String bd = esMysql ? "MySQL" : "H2";
 
         return ResponseEntity.ok(Map.of(
                 "estado", "OK",

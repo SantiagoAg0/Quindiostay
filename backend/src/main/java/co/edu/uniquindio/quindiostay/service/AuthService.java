@@ -90,6 +90,47 @@ public class AuthService {
         }
     }
 
+    @Transactional
+    public LoginResponse registrarCliente(co.edu.uniquindio.quindiostay.dto.auth.RegistroClienteRequest request) {
+        if (clienteRepository.findByCorreo(request.correo()).isPresent()) {
+            throw new ReglaNegocioException("Ya existe un cliente registrado con el correo: " + request.correo());
+        }
+
+        var cliente = new co.edu.uniquindio.quindiostay.domain.entity.nucleo.Cliente();
+        cliente.setNombres(request.nombres());
+        cliente.setApellidos(request.apellidos());
+        cliente.setTipoDocumento(request.tipoDocumento());
+        cliente.setNumeroDocumento(request.numeroDocumento());
+        cliente.setCorreo(request.correo());
+        cliente.setTelefono(request.telefono());
+        cliente.setFechaNacimiento(request.fechaNacimiento());
+        cliente.setCiudadOrigen(request.ciudadOrigen());
+        cliente = clienteRepository.save(cliente);
+
+        var perfil = new co.edu.uniquindio.quindiostay.domain.entity.nucleo.PerfilCliente();
+        perfil.setCliente(cliente);
+        perfil.setContrasenaCifrada(passwordEncoder.encode(request.contrasena()));
+        perfil.setIdiomaPreferido(request.idiomaPreferido() != null ? request.idiomaPreferido() : co.edu.uniquindio.quindiostay.domain.enums.IdiomaPreferido.ESPANOL);
+        perfil.setCanalPreferido(request.canalPreferido() != null ? request.canalPreferido() : co.edu.uniquindio.quindiostay.domain.enums.CanalPreferido.CORREO);
+        perfil.setAnticipacionDias(request.anticipacionDias() != null ? request.anticipacionDias() : (short) 3);
+        perfil.setAceptaPromociones(request.aceptaPromociones() != null ? request.aceptaPromociones() : co.edu.uniquindio.quindiostay.domain.enums.AceptaPromociones.SI);
+        perfilClienteRepository.save(perfil);
+
+        String nombreCompleto = cliente.getNombres() + " " + cliente.getApellidos();
+        var principal = new UsuarioPrincipal(
+                cliente.getIdCliente(),
+                cliente.getCorreo(),
+                nombreCompleto,
+                perfil.getContrasenaCifrada(),
+                "CLIENTE",
+                null,
+                true
+        );
+
+        String token = jwtService.generarToken(principal);
+        return new LoginResponse(token, "Bearer", nombreCompleto, "CLIENTE", null);
+    }
+
     public UsuarioActualResponse obtenerUsuarioActual() {
         var auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated() || auth.getPrincipal() instanceof String) {

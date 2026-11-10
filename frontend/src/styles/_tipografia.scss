@@ -1,48 +1,41 @@
 // ============================================================
-// Tipografía — configuración de la fuente Inter
+// Tipografía — Outfit (Headings) + Plus Jakarta Sans (Body)
 // ============================================================
 
 @use 'tokens' as *;
 
-// Familia tipográfica base
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI',
-    Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family: $font-body;
   font-size: 14px;
-  line-height: 1.5;
-  color: $ink;
+  line-height: 1.55;
+  color: $carbon-800;
+  background-color: #FAFCFA;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-// Pesos tipográficos
-.fw-regular  { font-weight: 400; }
-.fw-medium   { font-weight: 500; }
-.fw-semibold { font-weight: 600; }
-.fw-bold     { font-weight: 700; }
-
-// Encabezados
+// Encabezados con personalidad y alto impacto (Outfit / Syne)
 h1, h2, h3, h4, h5, h6 {
-  letter-spacing: -0.02em;
-  font-weight: 600;
+  font-family: $font-heading;
+  letter-spacing: -0.03em;
+  font-weight: 700;
   line-height: 1.2;
-  margin: 0 0 0.5em;
-  color: $ink;
+  margin: 0 0 0.4em;
+  color: $forest-deep;
 }
 
-h1 { font-size: 2rem;   font-weight: 700; }
-h2 { font-size: 1.5rem; font-weight: 700; }
-h3 { font-size: 1.25rem; }
-h4 { font-size: 1.125rem; }
-h5 { font-size: 1rem; }
-h6 { font-size: 0.875rem; }
+h1 { font-size: 2.25rem; font-weight: 800; }
+h2 { font-size: 1.75rem; font-weight: 700; }
+h3 { font-size: 1.35rem; font-weight: 700; }
+h4 { font-size: 1.15rem; font-weight: 600; }
+h5 { font-size: 1rem;    font-weight: 600; }
+h6 { font-size: 0.875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
 
-// Párrafos
 p {
-  margin: 0 0 1em;
+  margin: 0 0 0.85em;
+  color: inherit;
 }
 
-// Texto pequeño
 small, .text-sm {
   font-size: 0.8125rem;
 }
@@ -51,7 +44,12 @@ small, .text-sm {
   font-size: 0.75rem;
 }
 
-// Texto muted
 .text-mute {
-  color: $mute;
+  color: $carbon-mute;
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, $emerald 0%, $leaf 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }

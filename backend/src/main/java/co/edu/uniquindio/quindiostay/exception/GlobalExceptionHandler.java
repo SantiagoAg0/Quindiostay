@@ -65,7 +65,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> manejarGeneral(Exception ex, HttpServletRequest request) {
-        var error = new ApiError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Ha ocurrido un error interno en el servidor", request.getRequestURI());
+        ex.printStackTrace();
+        var error = new ApiError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Ha ocurrido un error interno en el servidor: " + ex.getMessage(), request.getRequestURI());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
     }
 }

@@ -1,53 +1,105 @@
 // ============================================================
-// Tokens de diseño — variables SCSS y propiedades CSS custom
-// Paleta oficial QuindíoStay
+// Tokens de diseño — QuindíoStay Premium (Taste Skill Standard)
+// Paleta: Verde Bosque, Esmeralda, Menta, Tonos Carbón y Glassmorphism
 // ============================================================
 
-// --- Variables SCSS ---
-$ink:    #0A0A0A;
-$forest: #0C2418;
-$pine:   #12432A;
-$green:  #1B7F47;
-$leaf:   #47B06C;
-$mint:   #D9F1E0;
-$mist:   #F3F8F4;
-$line:   #E2EAE4;
-$mute:   #5B6B61;
-$white:  #FFFFFF;
+// --- Tipografía Google Fonts ---
+$font-heading: 'Outfit', 'Syne', -apple-system, sans-serif;
+$font-body:    'Plus Jakarta Sans', -apple-system, sans-serif;
 
-// --- Radios de borde ---
-$radius-field: 10px;
-$radius-card:  16px;
+// --- Paleta de Colores Evolucionada ---
+$forest-deep:  #071911; // Fondo profundo bosque
+$forest:       #0B2D1F; // Verde Bosque Profundo
+$pine:         #0C3826; // Pino intermedio
+$emerald:      #10B981; // Verde Esmeralda vivo
+$emerald-dark: #059669; // Verde Esmeralda oscuro
+$leaf:         #34D399; // Menta brillante
+$mint:         #A7F3D0; // Menta suave para acentos
+$mist:         #F3F8F4; // Fondo claro limpio
+$white:        #FFFFFF;
 
-// --- Sombras ---
-$shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
-$shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-$shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.10);
+// --- Tonos Carbón Sofisticados (Sin negro puro #000) ---
+$carbon-900:   #09110D;
+$carbon-800:   #0E1712;
+$carbon-700:   #15221B;
+$carbon-600:   #1E2F26;
+$carbon-500:   #2C4035;
+$carbon-text:  #E5E7EB;
+$carbon-mute:  #9CA3AF;
 
-// --- Transiciones ---
-$transition-fast: 150ms ease;
-$transition-base: 250ms ease;
+// --- Bordes y Líneas Glass ---
+$line-dark:    rgba(255, 255, 255, 0.08);
+$line-light:   #E2EAE4;
+$glass-border: rgba(255, 255, 255, 0.10);
+$glass-border-glow: rgba(16, 185, 129, 0.30);
+$glass-bg-dark: rgba(14, 23, 18, 0.85);
+$glass-bg-card: rgba(21, 34, 27, 0.65);
+$glass-bg-light: rgba(255, 255, 255, 0.85);
 
-// --- Propiedades CSS custom (disponibles globalmente) ---
+// --- Radios de Borde Generosos ---
+$radius-xs:    6px;
+$radius-sm:    10px;
+$radius-md:    14px;
+$radius-lg:    18px;
+$radius-xl:    24px;
+$radius-full:  9999px;
+
+// --- Sombras Modernas y Difuminadas ---
+$shadow-sm:    0 2px 6px rgba(0, 0, 0, 0.06);
+$shadow-md:    0 8px 24px rgba(7, 25, 17, 0.12);
+$shadow-lg:    0 20px 40px -10px rgba(11, 45, 31, 0.25);
+$shadow-xl:    0 25px 50px -12px rgba(0, 0, 0, 0.35);
+$shadow-glow:  0 0 25px rgba(16, 185, 129, 0.25);
+$shadow-glow-sm: 0 0 15px rgba(52, 211, 153, 0.20);
+
+// --- Transiciones Suaves ---
+$transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+$transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+$transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+
+// --- Variables CSS globales ---
 :root {
-  --ink:    #{$ink};
-  --forest: #{$forest};
-  --pine:   #{$pine};
-  --green:  #{$green};
-  --leaf:   #{$leaf};
-  --mint:   #{$mint};
-  --mist:   #{$mist};
-  --line:   #{$line};
-  --mute:   #{$mute};
-  --white:  #{$white};
+  --font-heading:       #{$font-heading};
+  --font-body:          #{$font-body};
 
-  --radius-field: #{$radius-field};
-  --radius-card:  #{$radius-card};
+  --forest-deep:        #{$forest-deep};
+  --forest:             #{$forest};
+  --pine:               #{$pine};
+  --emerald:            #{$emerald};
+  --emerald-dark:       #{$emerald-dark};
+  --leaf:               #{$leaf};
+  --mint:               #{$mint};
+  --mist:               #{$mist};
+  --white:              #{$white};
 
-  --shadow-sm: #{$shadow-sm};
-  --shadow-md: #{$shadow-md};
-  --shadow-lg: #{$shadow-lg};
+  --carbon-900:         #{$carbon-900};
+  --carbon-800:         #{$carbon-800};
+  --carbon-700:         #{$carbon-700};
+  --carbon-600:         #{$carbon-600};
+  --carbon-text:        #{$carbon-text};
+  --carbon-mute:        #{$carbon-mute};
 
-  --transition-fast: #{$transition-fast};
-  --transition-base: #{$transition-base};
+  --glass-bg-dark:      #{$glass-bg-dark};
+  --glass-bg-card:      #{$glass-bg-card};
+  --glass-border:       #{$glass-border};
+  --glass-border-glow:  #{$glass-border-glow};
+
+  --radius-sm:          #{$radius-sm};
+  --radius-md:          #{$radius-md};
+  --radius-lg:          #{$radius-lg};
+  --radius-xl:          #{$radius-xl};
+
+  --shadow-sm:          #{$shadow-sm};
+  --shadow-md:          #{$shadow-md};
+  --shadow-lg:          #{$shadow-lg};
+  --shadow-glow:        #{$shadow-glow};
+
+  --transition-fast:    #{$transition-fast};
+  --transition-base:    #{$transition-base};
+
+  // Compatibilidad con vistas previas
+  --ink:                #{$carbon-900};
+  --green:              #{$emerald};
+  --line:               #{$line-light};
+  --mute:               #{$carbon-mute};
 }

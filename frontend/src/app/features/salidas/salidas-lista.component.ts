@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { SalidasService } from './salidas.service';
 import { SalidaTour } from '../../core/models/salida-tour.model';
 import { TourResumen } from '../../core/models/tour.model';
+import { GuiaResumen } from '../../core/models/guia.model';
 import { PillEstadoComponent } from '../../shared/pill-estado/pill-estado.component';
 import { BarraOcupacionComponent } from '../../shared/barra-ocupacion/barra-ocupacion.component';
-import { BotonComponent } from '../../shared/boton/boton.component';
 import { TablaVaciaComponent } from '../../shared/tabla-vacia/tabla-vacia.component';
 import { SalidaFormComponent } from './salida-form.component';
+import { IconComponent } from '../../shared/icon/icon.component';
 import { AuthService } from '../../core/auth/auth.service';
 
 @Component({
@@ -19,26 +20,32 @@ import { AuthService } from '../../core/auth/auth.service';
     FormsModule,
     PillEstadoComponent,
     BarraOcupacionComponent,
-    BotonComponent,
     TablaVaciaComponent,
-    SalidaFormComponent
+    SalidaFormComponent,
+    IconComponent
   ],
   template: `
-    <div class="salidas-page">
+    <div class="salidas-page animate-fade-in">
       <!-- Encabezado de página -->
       <div class="page-header">
         <div>
-          <h1 class="page-title">Salidas de Tour</h1>
-          <p class="page-subtitle">Programa, administra y monitorea la ocupación de cada salida.</p>
+          <div class="breadcrumb">
+            <app-icon name="compass" [size]="14"></app-icon>
+            <span>Operaciones · Salidas y Fechas</span>
+          </div>
+          <h1 class="page-title">Programación de Salidas</h1>
+          <p class="page-subtitle">Programa, administra y monitorea la ocupación y aforo de cada tour en el Quindío.</p>
         </div>
-        <app-boton variant="primary" (click)="abrirModalCrear()">
-          + Nueva salida
-        </app-boton>
+        <button class="btn btn-primary" (click)="abrirModalCrear()">
+          <app-icon name="plus" [size]="16"></app-icon>
+          <span>Nueva Salida</span>
+        </button>
       </div>
 
       <!-- Barra de Filtros -->
-      <div class="filters-card">
+      <div class="filters-card glass-card">
         <div class="filter-group search">
+          <app-icon name="search" [size]="16" class="search-icon"></app-icon>
           <input
             type="text"
             placeholder="Buscar por tour o guía..."
@@ -69,93 +76,113 @@ import { AuthService } from '../../core/auth/auth.service';
             (change)="aplicarFiltros()" />
         </div>
 
-        <app-boton variant="secondary" (click)="limpiarFiltros()">
-          Limpiar
-        </app-boton>
+        <button class="btn btn-secondary" (click)="limpiarFiltros()">
+          <app-icon name="refresh" [size]="14"></app-icon>
+          <span>Limpiar</span>
+        </button>
       </div>
 
       <!-- Tabla de Salidas -->
-      <div class="table-card">
+      <div class="table-card glass-card">
         <div *ngIf="cargando" class="loading-state">
-          Cargando salidas de tour...
+          <div class="spinner"></div>
+          <span>Cargando salidas programadas...</span>
         </div>
 
-        <table *ngIf="!cargando && salidas.length" class="salidas-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Tour y Horario</th>
-              <th>Guía</th>
-              <th>Idioma</th>
-              <th>Cupos</th>
-              <th>Estado</th>
-              <th class="actions-col">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let s of salidas">
-              <td class="id-cell">#{{ s.idSalida }}</td>
-              <td>
-                <div class="tour-info">
-                  <span class="tour-name">{{ s.tour.nombre }}</span>
-                  <span class="tour-meta">
-                    📅 {{ s.fecha }} · ⏰ {{ formatoHora(s.horaInicio) }} - {{ formatoHora(s.horaFin) }} ({{ s.tour.duracionHoras }}h)
-                  </span>
-                </div>
-              </td>
-              <td>
-                <span class="guia-name">🧭 {{ s.guia.nombre }}</span>
-              </td>
-              <td>
-                <span class="idioma-pill">{{ s.idioma.nombre }}</span>
-              </td>
-              <td>
-                <app-barra-ocupacion
-                  [cuposOcupados]="s.cuposOcupados"
-                  [totalCupos]="s.cupo">
-                </app-barra-ocupacion>
-              </td>
-              <td>
-                <app-pill-estado [estado]="s.estado"></app-pill-estado>
-              </td>
-              <td class="actions-col">
-                <div class="actions-group">
-                  <button class="action-btn edit" (click)="abrirModalEditar(s)" title="Editar">
-                    ✏️
-                  </button>
-                  <button
-                    *ngIf="s.estado === 'PROGRAMADA'"
-                    class="action-btn cancel"
-                    (click)="confirmarCancelar(s)"
-                    title="Cancelar salida">
-                    🚫
-                  </button>
-                  <button class="action-btn delete" (click)="confirmarEliminar(s)" title="Eliminar">
-                    🗑️
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="table-responsive" *ngIf="!cargando && salidas.length">
+          <table class="salidas-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Tour y Horario</th>
+                <th>Guía Turístico</th>
+                <th>Idioma</th>
+                <th>Ocupación</th>
+                <th>Estado</th>
+                <th class="actions-col">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of salidas">
+                <td class="id-cell">#{{ s.idSalida }}</td>
+                <td>
+                  <div class="tour-info">
+                    <span class="tour-name">{{ s.tour.nombre }}</span>
+                    <span class="tour-meta">
+                      <app-icon name="calendar" [size]="12"></app-icon>
+                      {{ s.fecha }} ·
+                      <app-icon name="clock" [size]="12"></app-icon>
+                      {{ formatoHora(s.horaInicio) }} - {{ formatoHora(s.horaFin) }} ({{ s.tour.duracionHoras }}h)
+                    </span>
+                  </div>
+                </td>
+                <td>
+                  <div class="guia-info">
+                    <app-icon name="user" [size]="14"></app-icon>
+                    <span class="guia-name">{{ s.guia.nombre }}</span>
+                  </div>
+                </td>
+                <td>
+                  <span class="idioma-pill">{{ s.idioma.nombre }}</span>
+                </td>
+                <td>
+                  <app-barra-ocupacion
+                    [cuposOcupados]="s.cuposOcupados"
+                    [totalCupos]="s.cupo">
+                  </app-barra-ocupacion>
+                </td>
+                <td>
+                  <app-pill-estado [estado]="s.estado"></app-pill-estado>
+                </td>
+                <td class="actions-col">
+                  <div class="actions-group">
+                    <button class="action-btn edit" (click)="abrirModalEditar(s)" title="Editar salida">
+                      <app-icon name="edit" [size]="15"></app-icon>
+                    </button>
+                    <button
+                      *ngIf="s.estado === 'PROGRAMADA'"
+                      class="action-btn cancel"
+                      (click)="confirmarCancelar(s)"
+                      title="Cancelar salida">
+                      <app-icon name="ban" [size]="15"></app-icon>
+                    </button>
+                    <button class="action-btn delete" (click)="confirmarEliminar(s)" title="Eliminar">
+                      <app-icon name="trash" [size]="15"></app-icon>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
         <app-tabla-vacia
           *ngIf="!cargando && !salidas.length"
           titulo="No hay salidas registradas"
-          subtitulo="No se encontraron salidas con los filtros aplicados.">
+          subtitulo="No se encontraron salidas con los criterios o filtros aplicados.">
         </app-tabla-vacia>
 
         <!-- Paginación -->
         <div *ngIf="totalPaginas > 1" class="pagination-footer">
           <span class="page-info">Página {{ paginaActual + 1 }} de {{ totalPaginas }} ({{ totalElementos }} salidas)</span>
-          <div class="page-buttons">
-            <button [disabled]="paginaActual === 0" (click)="cambiarPagina(paginaActual - 1)">Anterior</button>
-            <button [disabled]="paginaActual >= totalPaginas - 1" (click)="cambiarPagina(paginaActual + 1)">Siguiente</button>
+          <div class="pagination-controls">
+            <button
+              class="page-btn"
+              [disabled]="paginaActual === 0"
+              (click)="cambiarPagina(paginaActual - 1)">
+              Anterior
+            </button>
+            <button
+              class="page-btn"
+              [disabled]="paginaActual >= totalPaginas - 1"
+              (click)="cambiarPagina(paginaActual + 1)">
+              Siguiente
+            </button>
           </div>
         </div>
       </div>
 
-      <!-- Panel lateral de Crear/Editar -->
+      <!-- Modal / Drawer para crear / editar -->
       <app-salida-form
         *ngIf="mostrarModal"
         [salida]="salidaSeleccionada"
@@ -168,140 +195,302 @@ import { AuthService } from '../../core/auth/auth.service';
   `,
   styles: [`
     .salidas-page {
-      max-width: 1200px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      max-width: 1400px;
       margin: 0 auto;
     }
+
     .page-header {
       display: flex;
       justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .breadcrumb {
+      display: inline-flex;
       align-items: center;
-      margin-bottom: 24px;
-      .page-title {
-        font-size: 1.75rem;
-        font-weight: 700;
-        color: var(--ink);
-        letter-spacing: -0.02em;
-        margin: 0 0 4px;
-      }
-      .page-subtitle {
-        font-size: 0.9375rem;
-        color: var(--mute);
-        margin: 0;
-      }
+      gap: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--color-primary-dark);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 6px;
     }
-    .filters-card {
-      background: var(--white);
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      padding: 16px;
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-      .filter-group {
-        input, select {
-          padding: 8px 12px;
-          border: 1px solid var(--line);
-          border-radius: 10px;
-          font-size: 0.875rem;
-          font-family: inherit;
-          color: var(--ink);
-          &:focus { outline: none; border-color: var(--green); }
-        }
-        &.search input { min-width: 240px; }
-      }
+
+    .page-title {
+      font-family: var(--font-heading);
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: var(--color-ink);
+      margin: 0 0 6px;
+      letter-spacing: -0.02em;
     }
-    .table-card {
-      background: var(--white);
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
-    }
-    .loading-state {
-      padding: 48px;
-      text-align: center;
-      color: var(--mute);
+
+    .page-subtitle {
       font-size: 0.9375rem;
+      color: var(--color-ink-muted);
+      margin: 0;
     }
+
+    .filters-card {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 16px 20px;
+      border-radius: 16px;
+      align-items: center;
+    }
+
+    .filter-group {
+      position: relative;
+      display: flex;
+      align-items: center;
+
+      &.search {
+        flex: 1;
+        min-width: 220px;
+      }
+
+      .search-icon {
+        position: absolute;
+        left: 12px;
+        color: var(--color-ink-muted);
+        pointer-events: none;
+      }
+
+      input[type="text"] {
+        width: 100%;
+        padding: 9px 12px 9px 36px;
+        border: 1px solid var(--color-border);
+        border-radius: 10px;
+        font-size: 0.875rem;
+        background: #ffffff;
+        color: var(--color-ink);
+        transition: all 0.2s;
+
+        &:focus {
+          outline: none;
+          border-color: var(--color-primary);
+          box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+        }
+      }
+
+      select, input[type="date"] {
+        padding: 9px 14px;
+        border: 1px solid var(--color-border);
+        border-radius: 10px;
+        font-size: 0.875rem;
+        background: #ffffff;
+        color: var(--color-ink);
+        min-width: 160px;
+        transition: all 0.2s;
+
+        &:focus {
+          outline: none;
+          border-color: var(--color-primary);
+          box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+        }
+      }
+    }
+
+    .table-card {
+      border-radius: 16px;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .table-responsive {
+      width: 100%;
+      overflow-x: auto;
+    }
+
     .salidas-table {
       width: 100%;
       border-collapse: collapse;
       text-align: left;
       font-size: 0.875rem;
+
       th {
-        background: var(--mist);
-        color: var(--mute);
-        font-weight: 600;
+        background: rgba(11, 45, 31, 0.04);
+        padding: 14px 18px;
         font-size: 0.75rem;
+        font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        padding: 14px 20px;
-        border-bottom: 1px solid var(--line);
+        color: var(--color-ink-muted);
+        border-bottom: 1px solid var(--color-border);
       }
+
       td {
-        padding: 16px 20px;
-        border-bottom: 1px solid var(--line);
-        color: var(--ink);
+        padding: 14px 18px;
+        border-bottom: 1px solid var(--color-border);
         vertical-align: middle;
       }
-      tr:last-child td { border-bottom: none; }
-      tr:hover td { background: rgba(243, 248, 244, 0.5); }
+
+      tbody tr {
+        transition: background-color 0.15s ease;
+
+        &:hover {
+          background: rgba(16, 185, 129, 0.03);
+        }
+      }
     }
-    .id-cell { font-weight: 600; color: var(--mute); }
+
+    .id-cell {
+      font-family: monospace;
+      font-weight: 700;
+      color: var(--color-ink-muted);
+    }
+
     .tour-info {
       display: flex;
       flex-direction: column;
-      gap: 3px;
-      .tour-name { font-weight: 600; color: var(--ink); font-size: 0.9375rem; }
-      .tour-meta { font-size: 0.75rem; color: var(--mute); }
+      gap: 4px;
     }
-    .guia-name { font-weight: 500; }
+
+    .tour-name {
+      font-weight: 700;
+      color: var(--color-ink);
+    }
+
+    .tour-meta {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.75rem;
+      color: var(--color-ink-muted);
+    }
+
+    .guia-info {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+      color: var(--color-ink);
+    }
+
     .idioma-pill {
-      background: var(--mist);
+      display: inline-block;
       padding: 3px 8px;
       border-radius: 6px;
+      background: rgba(11, 45, 31, 0.06);
       font-size: 0.75rem;
       font-weight: 600;
-      color: var(--pine);
+      color: var(--color-primary-dark);
     }
-    .actions-col { text-align: right; }
+
+    .actions-col {
+      text-align: right;
+    }
+
     .actions-group {
-      display: flex;
-      justify-content: flex-end;
+      display: inline-flex;
+      align-items: center;
       gap: 6px;
-      .action-btn {
-        background: none;
-        border: 1px solid var(--line);
-        border-radius: 6px;
-        padding: 4px 8px;
-        cursor: pointer;
-        font-size: 0.875rem;
-        transition: all 0.2s;
-        &:hover { background: var(--mist); border-color: #CBD5E1; }
-        &.cancel:hover { background: #FEF3C7; border-color: #FCD34D; }
-        &.delete:hover { background: #FEE2E2; border-color: #FCA5A5; }
+    }
+
+    .action-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: 1px solid var(--color-border);
+      background: #ffffff;
+      color: var(--color-ink-muted);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        transform: translateY(-1px);
+      }
+
+      &.edit:hover {
+        background: rgba(16, 185, 129, 0.1);
+        color: #059669;
+        border-color: rgba(16, 185, 129, 0.3);
+      }
+
+      &.cancel:hover {
+        background: rgba(245, 158, 11, 0.1);
+        color: #d97706;
+        border-color: rgba(245, 158, 11, 0.3);
+      }
+
+      &.delete:hover {
+        background: rgba(239, 68, 68, 0.1);
+        color: #dc2626;
+        border-color: rgba(239, 68, 68, 0.3);
       }
     }
+
     .pagination-footer {
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding: 14px 20px;
-      border-top: 1px solid var(--line);
-      background: var(--mist);
-      .page-info { font-size: 0.8125rem; color: var(--mute); }
-      .page-buttons button {
-        padding: 6px 12px;
-        border: 1px solid var(--line);
-        background: var(--white);
-        border-radius: 6px;
-        font-size: 0.8125rem;
-        cursor: pointer;
-        margin-left: 8px;
-        &:disabled { opacity: 0.5; cursor: not-allowed; }
+      border-top: 1px solid var(--color-border);
+      background: rgba(255, 255, 255, 0.4);
+    }
+
+    .page-info {
+      font-size: 0.8125rem;
+      color: var(--color-ink-muted);
+    }
+
+    .pagination-controls {
+      display: flex;
+      gap: 8px;
+    }
+
+    .page-btn {
+      padding: 6px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--color-border);
+      background: #ffffff;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--color-ink);
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &:hover:not(:disabled) {
+        border-color: var(--color-primary);
+        color: var(--color-primary);
       }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+
+    .loading-state {
+      padding: 48px 16px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      color: var(--color-ink-muted);
+    }
+
+    .spinner {
+      width: 28px;
+      height: 28px;
+      border: 3px solid rgba(16, 185, 129, 0.2);
+      border-top-color: #10b981;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
   `]
 })
@@ -310,49 +499,69 @@ export class SalidasListaComponent implements OnInit {
 
   salidas: SalidaTour[] = [];
   tours: TourResumen[] = [];
-  guias: any[] = [];
+  guias: GuiaResumen[] = [];
+
   cargando = true;
+  paginaActual = 0;
+  totalPaginas = 0;
+  totalElementos = 0;
+  tamanoPagina = 10;
 
   filtroTexto = '';
   filtroTour: number | null = null;
   filtroEstado = '';
   filtroFecha = '';
 
-  paginaActual = 0;
-  totalPaginas = 0;
-  totalElementos = 0;
-
   mostrarModal = false;
   salidaSeleccionada: SalidaTour | null = null;
 
   ngOnInit(): void {
-    this.cargarCatalogos();
     this.cargarSalidas();
+    this.cargarCatalogos();
   }
 
   cargarCatalogos(): void {
-    this.salidasService.listarTours().subscribe(tours => this.tours = tours);
-    this.salidasService.listarGuias().subscribe(guias => this.guias = guias);
+    this.salidasService.listarToursResumen().subscribe({
+      next: (tours) => (this.tours = tours),
+      error: (e) => console.error('Error al cargar tours resumen', e)
+    });
+
+    this.salidasService.listarGuiasResumen().subscribe({
+      next: (guias) => (this.guias = guias),
+      error: (e) => console.error('Error al cargar guías resumen', e)
+    });
   }
 
   cargarSalidas(): void {
     this.cargando = true;
-    this.salidasService.buscar({
-      texto: this.filtroTexto || undefined,
-      idTour: this.filtroTour || undefined,
-      estado: this.filtroEstado || undefined,
-      fecha: this.filtroFecha || undefined,
+    const params: any = {
       page: this.paginaActual,
-      size: 10
-    }).subscribe({
-      next: (res) => {
-        this.salidas = res.contenido;
-        this.paginaActual = res.paginaActual;
-        this.totalPaginas = res.totalPaginas;
-        this.totalElementos = res.totalElementos;
+      size: this.tamanoPagina,
+      sort: 'fecha,asc'
+    };
+
+    if (this.filtroTour) params.idTour = this.filtroTour;
+    if (this.filtroEstado) params.estado = this.filtroEstado;
+    if (this.filtroFecha) params.fecha = this.filtroFecha;
+
+    this.salidasService.listar(params).subscribe({
+      next: (pagina) => {
+        let items = pagina.contenido;
+        if (this.filtroTexto.trim()) {
+          const txt = this.filtroTexto.toLowerCase();
+          items = items.filter(
+            (s: SalidaTour) =>
+              s.tour.nombre.toLowerCase().includes(txt) ||
+              s.guia.nombre.toLowerCase().includes(txt)
+          );
+        }
+        this.salidas = items;
+        this.totalPaginas = pagina.totalPaginas;
+        this.totalElementos = pagina.totalElementos;
         this.cargando = false;
       },
-      error: () => {
+      error: (e: any) => {
+        console.error('Error al cargar salidas', e);
         this.cargando = false;
       }
     });
@@ -368,12 +577,18 @@ export class SalidasListaComponent implements OnInit {
     this.filtroTour = null;
     this.filtroEstado = '';
     this.filtroFecha = '';
-    this.aplicarFiltros();
+    this.paginaActual = 0;
+    this.cargarSalidas();
   }
 
-  cambiarPagina(page: number): void {
-    this.paginaActual = page;
+  cambiarPagina(nuevaPagina: number): void {
+    this.paginaActual = nuevaPagina;
     this.cargarSalidas();
+  }
+
+  formatoHora(hora: string): string {
+    if (!hora) return '';
+    return hora.substring(0, 5);
   }
 
   abrirModalCrear(): void {
@@ -397,31 +612,20 @@ export class SalidasListaComponent implements OnInit {
   }
 
   confirmarCancelar(salida: SalidaTour): void {
-    if (confirm(`¿Seguro que deseas cancelar la salida #${salida.idSalida} de "${salida.tour.nombre}"?`)) {
+    if (confirm(`¿Deseas cancelar la salida #${salida.idSalida} del tour "${salida.tour.nombre}"?`)) {
       this.salidasService.cancelar(salida.idSalida).subscribe({
         next: () => this.cargarSalidas(),
-        error: (err) => alert(err.error?.mensaje || 'Error al cancelar la salida')
+        error: (err) => alert(err.error?.mensaje || 'Error al cancelar salida')
       });
     }
   }
 
   confirmarEliminar(salida: SalidaTour): void {
-    if (confirm(`¿Seguro que deseas eliminar la salida #${salida.idSalida}? Esta acción no se puede deshacer.`)) {
+    if (confirm(`¿Estás seguro de eliminar permanentemente la salida #${salida.idSalida}?`)) {
       this.salidasService.eliminar(salida.idSalida).subscribe({
         next: () => this.cargarSalidas(),
-        error: (err) => {
-          if (err.status === 409) {
-            alert(err.error?.mensaje || 'La salida tiene reservas: cancélala en lugar de eliminarla');
-          } else {
-            alert(err.error?.mensaje || 'Error al eliminar la salida');
-          }
-        }
+        error: (err) => alert(err.error?.mensaje || 'Error al eliminar salida')
       });
     }
-  }
-
-  formatoHora(hora: string | null): string {
-    if (!hora) return '';
-    return hora.substring(0, 5);
   }
 }
