@@ -40,10 +40,10 @@ import { TablaVaciaComponent } from '../../shared/tabla-vacia/tabla-vacia.compon
         <div>
           <div class="breadcrumb">
             <app-icon name="ticket" [size]="14"></app-icon>
-            <span>Operaciones · Transacciones y Boletos</span>
+            <span>{{ authService.esCliente() ? 'Mis Viajes · Reservas y Boletos' : 'Operaciones · Transacciones y Boletos' }}</span>
           </div>
-          <h1 class="page-title">Gestión de Reservas</h1>
-          <p class="page-subtitle">Control de boletos, registro de pasajeros (RN06) y políticas de cancelación (RN05).</p>
+          <h1 class="page-title">{{ authService.esCliente() ? 'Mis Reservas de Tours' : 'Gestión de Reservas' }}</h1>
+          <p class="page-subtitle">{{ authService.esCliente() ? 'Consulta el estado de tus reservas, fechas de salida y saldo pendiente.' : 'Control de boletos, registro de pasajeros y políticas de cancelación.' }}</p>
         </div>
         <button class="btn btn-primary" (click)="abrirModalNuevaReserva()">
           <app-icon name="plus" [size]="16"></app-icon>
@@ -208,7 +208,7 @@ import { TablaVaciaComponent } from '../../shared/tabla-vacia/tabla-vacia.compon
 
             <!-- Cliente y Canal -->
             <div class="form-row">
-              <div class="form-group">
+              <div class="form-group" *ngIf="!authService.esCliente()">
                 <label class="form-label">Cliente Titular <span class="req">*</span></label>
                 <select formControlName="idCliente" class="form-control">
                   <option [ngValue]="null" disabled>Selecciona un cliente</option>
@@ -218,7 +218,14 @@ import { TablaVaciaComponent } from '../../shared/tabla-vacia/tabla-vacia.compon
                 </select>
               </div>
 
-              <div class="form-group">
+              <div class="form-group" *ngIf="authService.esCliente()">
+                <label class="form-label">Cliente Titular</label>
+                <div class="readonly-field">
+                  {{ clientesDisponibles.length ? clientesDisponibles[0].nombres + ' ' + clientesDisponibles[0].apellidos : 'Cargando...' }}
+                </div>
+              </div>
+
+              <div class="form-group" *ngIf="!authService.esCliente()">
                 <label class="form-label">Canal de Reserva <span class="req">*</span></label>
                 <select formControlName="canal" class="form-control">
                   <option value="WEB">Portal Web Oficial</option>
@@ -227,6 +234,11 @@ import { TablaVaciaComponent } from '../../shared/tabla-vacia/tabla-vacia.compon
                   <option value="TELEFONO">Línea Telefónica</option>
                   <option value="AGENCIA_INTERMEDIARIA">Agencia Aliada</option>
                 </select>
+              </div>
+
+              <div class="form-group" *ngIf="authService.esCliente()">
+                <label class="form-label">Canal de Reserva</label>
+                <div class="readonly-field">Portal Web Oficial</div>
               </div>
             </div>
 
@@ -866,6 +878,16 @@ import { TablaVaciaComponent } from '../../shared/tabla-vacia/tabla-vacia.compon
       }
     }
 
+    .readonly-field {
+      padding: 9px 12px;
+      border: 1px solid var(--color-border);
+      border-radius: 10px;
+      font-size: 0.875rem;
+      color: var(--color-ink);
+      background: #f9fafb;
+      font-weight: 600;
+    }
+
     /* Participantes Section */
     .participantes-section {
       border: 1px solid var(--color-border);
@@ -1151,7 +1173,7 @@ export class ReservasListaComponent implements OnInit {
   private planesService = inject(PlanesService);
   private clientesService = inject(ClientesService);
   private pagosService = inject(PagosService);
-  private authService = inject(AuthService);
+  authService = inject(AuthService);
   private fb = inject(FormBuilder);
 
   reservas: ReservaDetalleDto[] = [];
@@ -1223,14 +1245,24 @@ export class ReservasListaComponent implements OnInit {
       }
     });
 
-    this.clientesService.listar().subscribe({
-      next: (clientes) => {
-        this.clientesDisponibles = clientes || [];
-        if (clientes.length && !this.formReserva.get('idCliente')?.value) {
-          this.formReserva.patchValue({ idCliente: clientes[0].idCliente });
+    // Si es CLIENTE, obtener solo su perfil (no tiene permiso para listar todos)
+    if (this.authService.esCliente()) {
+      this.clientesService.obtenerMiPerfil().subscribe({
+        next: (miPerfil) => {
+          this.clientesDisponibles = [miPerfil];
+          this.formReserva.patchValue({ idCliente: miPerfil.idCliente, canal: 'WEB' });
         }
-      }
-    });
+      });
+    } else {
+      this.clientesService.listar().subscribe({
+        next: (clientes) => {
+          this.clientesDisponibles = clientes || [];
+          if (clientes.length && !this.formReserva.get('idCliente')?.value) {
+            this.formReserva.patchValue({ idCliente: clientes[0].idCliente });
+          }
+        }
+      });
+    }
   }
 
   cargarReservas(): void {
@@ -1274,11 +1306,12 @@ export class ReservasListaComponent implements OnInit {
 
   abrirModalNuevaReserva(): void {
     this.errorMensaje = null;
+    const esCliente = this.authService.esCliente();
     this.formReserva.reset({
       idSalida: null,
       idPlan: this.planesDisponibles.length ? this.planesDisponibles[0].idPlan : null,
       idCliente: this.clientesDisponibles.length ? this.clientesDisponibles[0].idCliente : null,
-      canal: 'WEB'
+      canal: esCliente ? 'WEB' : 'WEB'
     });
     this.participantesArray.clear();
     this.agregarParticipante(); // 1 default participant

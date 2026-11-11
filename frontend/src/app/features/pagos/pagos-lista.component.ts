@@ -8,6 +8,7 @@ import { ReservaDetalleDto } from '../../core/models/reserva.model';
 import { IconComponent } from '../../shared/icon/icon.component';
 import { PillEstadoComponent } from '../../shared/pill-estado/pill-estado.component';
 import { TablaVaciaComponent } from '../../shared/tabla-vacia/tabla-vacia.component';
+import { AuthService } from '../../core/auth/auth.service';
 
 @Component({
   selector: 'app-pagos-lista',
@@ -27,19 +28,19 @@ import { TablaVaciaComponent } from '../../shared/tabla-vacia/tabla-vacia.compon
         <div>
           <div class="breadcrumb">
             <app-icon name="dollar-sign" [size]="14"></app-icon>
-            <span>Tesorería · Pasarela y Recaudos</span>
+            <span>{{ authService.esCliente() ? 'Mis Pagos · Historial de Comprobantes' : 'Tesorería · Pasarela y Recaudos' }}</span>
           </div>
-          <h1 class="page-title">Historial y Control de Pagos</h1>
-          <p class="page-subtitle">Registro de transacciones, comprobantes digitales y gestión de reembolsos.</p>
+          <h1 class="page-title">{{ authService.esCliente() ? 'Mis Pagos Realizados' : 'Historial y Control de Pagos' }}</h1>
+          <p class="page-subtitle">{{ authService.esCliente() ? 'Consulta tus pagos, métodos utilizados y estado de cada transacción.' : 'Registro de transacciones, comprobantes digitales y gestión de reembolsos.' }}</p>
         </div>
-        <button class="btn btn-primary" (click)="abrirModalNuevoPago()">
+        <button *ngIf="!authService.esCliente()" class="btn btn-primary" (click)="abrirModalNuevoPago()">
           <app-icon name="plus" [size]="16"></app-icon>
           <span>Registrar Transacción</span>
         </button>
       </div>
 
       <!-- Resumen Financiero Rápido -->
-      <div class="kpi-mini-grid">
+      <div *ngIf="!authService.esCliente()" class="kpi-mini-grid">
         <div class="kpi-mini glass-card">
           <div class="kpi-mini-label">Total Recaudado</div>
           <div class="kpi-mini-val">$ {{ totalRecaudado | number }}</div>
@@ -100,11 +101,11 @@ import { TablaVaciaComponent } from '../../shared/tabla-vacia/tabla-vacia.compon
                 <th>Referencia</th>
                 <th>Fecha y Hora</th>
                 <th>Estado</th>
-                <th class="actions-col">Acciones</th>
+                <th *ngIf="!authService.esCliente()" class="actions-col">Acciones</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let p of pagosFiltrados">
+              <tr *ngFor="let p of pagosPaginados">
                 <td class="id-cell">#PAG-{{ p.idPago }}</td>
                 <td>
                   <span class="reserva-tag">#RES-{{ p.idReserva }}</span>
@@ -115,7 +116,7 @@ import { TablaVaciaComponent } from '../../shared/tabla-vacia/tabla-vacia.compon
                     <span class="t-name">{{ p.tourNombre }}</span>
                   </div>
                 </td>
-                <td>
+                <td class="monto-cell">
                   <span class="monto-val">$ {{ p.monto | number }}</span>
                 </td>
                 <td>
@@ -133,7 +134,7 @@ import { TablaVaciaComponent } from '../../shared/tabla-vacia/tabla-vacia.compon
                 <td>
                   <app-pill-estado [estado]="p.estado"></app-pill-estado>
                 </td>
-                <td class="actions-col">
+                <td *ngIf="!authService.esCliente()" class="actions-col">
                   <div class="actions-group">
                     <button
                       *ngIf="p.estado === 'EXITOSO'"
@@ -154,6 +155,25 @@ import { TablaVaciaComponent } from '../../shared/tabla-vacia/tabla-vacia.compon
           titulo="No se encontraron pagos"
           subtitulo="Aún no hay transacciones registradas con los filtros actuales.">
         </app-tabla-vacia>
+
+        <!-- Paginación Visual de Pagos -->
+        <div *ngIf="totalPaginas > 1" class="pagination-footer">
+          <span class="page-info">Página {{ paginaActual + 1 }} de {{ totalPaginas }} ({{ pagosFiltrados.length }} transacciones)</span>
+          <div class="pagination-controls">
+            <button
+              class="page-btn"
+              [disabled]="paginaActual === 0"
+              (click)="cambiarPagina(paginaActual - 1)">
+              Anterior
+            </button>
+            <button
+              class="page-btn"
+              [disabled]="paginaActual >= totalPaginas - 1"
+              (click)="cambiarPagina(paginaActual + 1)">
+              Siguiente
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- MODAL NUEVO PAGO -->
@@ -428,10 +448,15 @@ import { TablaVaciaComponent } from '../../shared/tabla-vacia/tabla-vacia.compon
       .t-name { font-size: 0.75rem; color: var(--color-ink-muted); }
     }
 
+    .monto-cell {
+      white-space: nowrap;
+    }
+
     .monto-val {
       font-weight: 800;
       color: #047857;
       font-size: 0.9375rem;
+      white-space: nowrap;
     }
 
     .metodo-chip {
@@ -606,6 +631,47 @@ import { TablaVaciaComponent } from '../../shared/tabla-vacia/tabla-vacia.compon
       color: var(--color-ink-muted);
     }
 
+    .pagination-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 20px;
+      border-top: 1px solid var(--color-border);
+      background: rgba(255, 255, 255, 0.4);
+    }
+
+    .page-info {
+      font-size: 0.8125rem;
+      color: var(--color-ink-muted);
+    }
+
+    .pagination-controls {
+      display: flex;
+      gap: 8px;
+    }
+
+    .page-btn {
+      padding: 6px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--color-border);
+      background: #ffffff;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--color-ink);
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &:hover:not(:disabled) {
+        border-color: var(--color-primary);
+        color: var(--color-primary);
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+
     .spinner {
       width: 28px;
       height: 28px;
@@ -628,15 +694,21 @@ export class PagosListaComponent implements OnInit {
   private pagosService = inject(PagosService);
   private reservasService = inject(ReservasService);
   private fb = inject(FormBuilder);
+  authService = inject(AuthService);
 
   pagos: PagoDetalleDto[] = [];
   pagosFiltrados: PagoDetalleDto[] = [];
+  pagosPaginados: PagoDetalleDto[] = [];
   reservasConSaldo: ReservaDetalleDto[] = [];
 
   cargando = true;
   guardando = false;
   filtroTexto = '';
   filtroEstado = '';
+
+  paginaActual = 0;
+  tamanoPagina = 8;
+  totalPaginas = 0;
 
   totalRecaudado = 0;
   totalExitosos = 0;
@@ -705,11 +777,29 @@ export class PagosListaComponent implements OnInit {
       res = res.filter((p) => p.estado === this.filtroEstado);
     }
     this.pagosFiltrados = res;
+    this.totalPaginas = Math.ceil(this.pagosFiltrados.length / this.tamanoPagina) || 1;
+    if (this.paginaActual >= this.totalPaginas) {
+      this.paginaActual = 0;
+    }
+    this.actualizarPagina();
+  }
+
+  actualizarPagina(): void {
+    const inicio = this.paginaActual * this.tamanoPagina;
+    this.pagosPaginados = this.pagosFiltrados.slice(inicio, inicio + this.tamanoPagina);
+  }
+
+  cambiarPagina(nuevaPagina: number): void {
+    if (nuevaPagina >= 0 && nuevaPagina < this.totalPaginas) {
+      this.paginaActual = nuevaPagina;
+      this.actualizarPagina();
+    }
   }
 
   limpiarFiltros(): void {
     this.filtroTexto = '';
     this.filtroEstado = '';
+    this.paginaActual = 0;
     this.filtrarPagos();
   }
 

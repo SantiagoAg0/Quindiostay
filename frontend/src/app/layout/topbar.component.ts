@@ -43,9 +43,7 @@ import { IconComponent } from '../shared/icon/icon.component';
   styles: [`
     .topbar {
       height: 68px;
-      background: rgba(255, 255, 255, 0.92);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      background: #ffffff;
       border-bottom: 1px solid rgba(16, 185, 129, 0.12);
       display: flex;
       align-items: center;

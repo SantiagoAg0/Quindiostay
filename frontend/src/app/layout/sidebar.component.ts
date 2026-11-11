@@ -28,41 +28,87 @@ import { IconComponent } from '../shared/icon/icon.component';
           <span>Panel Principal</span>
         </a>
 
-        <div class="nav-section-label">Operación Turística</div>
+        <!-- Operación Turística (Salidas, Tours, Guías) -->
+        <ng-container *ngIf="!authService.esCliente()">
+          <div class="nav-section-label">Operación Turística</div>
 
-        <a routerLink="/salidas" routerLinkActive="active" class="nav-item">
-          <app-icon name="calendar" [size]="18"></app-icon>
-          <span>Salidas de Tour</span>
-        </a>
+          <a routerLink="/salidas" routerLinkActive="active" class="nav-item">
+            <app-icon name="calendar" [size]="18"></app-icon>
+            <span>Salidas de Tour</span>
+          </a>
 
-        <a routerLink="/tours" routerLinkActive="active" class="nav-item">
-          <app-icon name="compass" [size]="18"></app-icon>
-          <span>Catálogo de Tours</span>
-        </a>
+          <a routerLink="/tours" routerLinkActive="active" class="nav-item">
+            <app-icon name="compass" [size]="18"></app-icon>
+            <span>Catálogo de Tours</span>
+          </a>
 
-        <a routerLink="/guias" routerLinkActive="active" class="nav-item">
-          <app-icon name="user" [size]="18"></app-icon>
-          <span>Guías Turísticos</span>
-        </a>
+          <a routerLink="/guias" routerLinkActive="active" class="nav-item">
+            <app-icon name="user" [size]="18"></app-icon>
+            <span>Guías Turísticos</span>
+          </a>
+        </ng-container>
 
-        <div class="nav-section-label">Ventas & Cartera</div>
+        <!-- Para Clientes: Explorar Tours y Salidas -->
+        <ng-container *ngIf="authService.esCliente()">
+          <div class="nav-section-label">Explorar & Tours</div>
 
-        <a routerLink="/reservas" routerLinkActive="active" class="nav-item">
-          <app-icon name="ticket" [size]="18"></app-icon>
-          <span>Reservas</span>
-        </a>
+          <a routerLink="/tours" routerLinkActive="active" class="nav-item">
+            <app-icon name="compass" [size]="18"></app-icon>
+            <span>Catálogo de Tours</span>
+          </a>
 
-        <a routerLink="/pagos" routerLinkActive="active" class="nav-item">
-          <app-icon name="credit-card" [size]="18"></app-icon>
-          <span>Pagos & Cartera</span>
-        </a>
+          <a routerLink="/salidas" routerLinkActive="active" class="nav-item">
+            <app-icon name="calendar" [size]="18"></app-icon>
+            <span>Salidas Disponibles</span>
+          </a>
+        </ng-container>
 
-        <a routerLink="/notificaciones" routerLinkActive="active" class="nav-item">
-          <app-icon name="bell" [size]="18"></app-icon>
-          <span>Notificaciones</span>
-        </a>
+        <!-- Ventas & Cartera para Personal Interno -->
+        <ng-container *ngIf="!authService.esCliente()">
+          <div class="nav-section-label">Ventas & Cartera</div>
 
-        <!-- Secciones Administrativas -->
+          <a routerLink="/reservas" routerLinkActive="active" class="nav-item">
+            <app-icon name="ticket" [size]="18"></app-icon>
+            <span>Reservas</span>
+          </a>
+
+          <a routerLink="/pagos" routerLinkActive="active" class="nav-item">
+            <app-icon name="credit-card" [size]="18"></app-icon>
+            <span>Pagos & Cartera</span>
+          </a>
+
+          <a routerLink="/notificaciones" routerLinkActive="active" class="nav-item">
+            <app-icon name="bell" [size]="18"></app-icon>
+            <span>Notificaciones</span>
+          </a>
+        </ng-container>
+
+        <!-- Mis Viajes para Cliente -->
+        <ng-container *ngIf="authService.esCliente()">
+          <div class="nav-section-label">Mis Viajes</div>
+
+          <a routerLink="/reservas" routerLinkActive="active" class="nav-item">
+            <app-icon name="ticket" [size]="18"></app-icon>
+            <span>Mis Reservas</span>
+          </a>
+
+          <a routerLink="/pagos" routerLinkActive="active" class="nav-item">
+            <app-icon name="credit-card" [size]="18"></app-icon>
+            <span>Mis Pagos</span>
+          </a>
+
+          <a routerLink="/notificaciones" routerLinkActive="active" class="nav-item">
+            <app-icon name="bell" [size]="18"></app-icon>
+            <span>Mis Notificaciones</span>
+          </a>
+
+          <a routerLink="/clientes" routerLinkActive="active" class="nav-item">
+            <app-icon name="user" [size]="18"></app-icon>
+            <span>Mi Perfil & Preferencias</span>
+          </a>
+        </ng-container>
+
+        <!-- Secciones Administrativas (Exclusivo Administrador y Encargado) -->
         <ng-container *ngIf="authService.esAdmin() || authService.esEncargado()">
           <div class="nav-section-label">Administración</div>
 
@@ -77,20 +123,15 @@ import { IconComponent } from '../shared/icon/icon.component';
           </a>
         </ng-container>
 
+        <!-- Directorio de Clientes (Solo para Personal Operativo / Admin) -->
         <ng-container *ngIf="authService.esAdmin() || authService.esOperador()">
           <a routerLink="/clientes" routerLinkActive="active" class="nav-item">
             <app-icon name="users" [size]="18"></app-icon>
-            <span>Clientes & Perfiles</span>
+            <span>Directorio de Clientes</span>
           </a>
         </ng-container>
 
-        <ng-container *ngIf="authService.esCliente()">
-          <a routerLink="/clientes" routerLinkActive="active" class="nav-item">
-            <app-icon name="user" [size]="18"></app-icon>
-            <span>Mi Perfil & Preferencias</span>
-          </a>
-        </ng-container>
-
+        <!-- Usuarios del Sistema (Solo Administrador de Plataforma) -->
         <ng-container *ngIf="authService.esAdmin()">
           <a routerLink="/usuarios" routerLinkActive="active" class="nav-item">
             <app-icon name="shield" [size]="18"></app-icon>
@@ -98,13 +139,15 @@ import { IconComponent } from '../shared/icon/icon.component';
           </a>
         </ng-container>
 
-        <!-- Reportes y Estadísticas -->
-        <div class="nav-section-label">Inteligencia de Negocio</div>
+        <!-- Reportes y Estadísticas (Personal Administrativo y Operativo) -->
+        <ng-container *ngIf="!authService.esCliente()">
+          <div class="nav-section-label">Inteligencia de Negocio</div>
 
-        <a routerLink="/reportes" routerLinkActive="active" class="nav-item">
-          <app-icon name="chart" [size]="18"></app-icon>
-          <span>Reportes & Estadísticas</span>
-        </a>
+          <a routerLink="/reportes" routerLinkActive="active" class="nav-item">
+            <app-icon name="chart" [size]="18"></app-icon>
+            <span>Reportes & Estadísticas</span>
+          </a>
+        </ng-container>
       </nav>
 
       <!-- Pie del Sidebar con Badge de Estado de Sesión -->
@@ -120,7 +163,7 @@ import { IconComponent } from '../shared/icon/icon.component';
     .sidebar {
       width: 260px;
       height: 100vh;
-      background: linear-gradient(180deg, #071911 0%, #0B2D1F 45%, #0B1E16 100%);
+      background: linear-gradient(180deg, #142B20 0%, #1E4D36 45%, #163827 100%);
       color: #E5E7EB;
       display: flex;
       flex-direction: column;
@@ -152,12 +195,12 @@ import { IconComponent } from '../shared/icon/icon.component';
 
       .brand-title {
         display: block;
-        font-family: var(--font-heading, 'Outfit', sans-serif);
-        font-weight: 800;
-        font-size: 1.25rem;
-        letter-spacing: -0.03em;
+        font-family: var(--font-brand, 'Caveat', cursive);
+        font-weight: 700;
+        font-size: 1.75rem;
+        letter-spacing: -0.01em;
         color: #FFFFFF;
-        line-height: 1.1;
+        line-height: 1;
       }
 
       .brand-subtitle {

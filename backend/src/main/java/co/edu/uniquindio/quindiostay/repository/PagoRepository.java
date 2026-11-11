@@ -11,6 +11,8 @@ import java.util.List;
 public interface PagoRepository extends JpaRepository<Pago, Long> {
     List<Pago> findByReservaIdReserva(Long idReserva);
 
+    List<Pago> findByReservaClienteIdCliente(Long idCliente);
+
     List<Pago> findByEstado(EstadoPago estado);
 
     @Query("SELECT COALESCE(SUM(p.monto), 0) FROM Pago p WHERE p.reserva.idReserva = :idReserva AND p.estado = 'EXITOSO'")

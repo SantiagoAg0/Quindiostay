@@ -1,5 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ToursService } from './tours.service';
 import { PrestadoresService } from '../prestadores/prestadores.service';
@@ -11,7 +12,7 @@ import { IconComponent } from '../../shared/icon/icon.component';
 @Component({
   selector: 'app-tours-lista',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, IconComponent],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, IconComponent],
   template: `
     <div class="page-container animate-fade-in">
       <!-- Encabezado de Página -->
@@ -95,6 +96,13 @@ import { IconComponent } from '../../shared/icon/icon.component';
               <button class="btn-icon btn-icon-danger" (click)="eliminar(tour.idTour)" title="Eliminar">
                 <app-icon name="trash" [size]="16"></app-icon>
               </button>
+            </div>
+
+            <div class="actions-box" *ngIf="!puedeGestionar">
+              <a routerLink="/salidas" class="btn btn-sm btn-primary">
+                <app-icon name="calendar" [size]="14"></app-icon>
+                <span>Ver Salidas</span>
+              </a>
             </div>
           </div>
         </div>
@@ -435,7 +443,7 @@ import { IconComponent } from '../../shared/icon/icon.component';
       background: rgba(0, 0, 0, 0.7);
       backdrop-filter: blur(6px);
       display: flex; align-items: center; justify-content: center;
-      z-index: 100; padding: 20px;
+      z-index: 2000; padding: 20px;
     }
 
     .modal-card {
@@ -452,6 +460,41 @@ import { IconComponent } from '../../shared/icon/icon.component';
 
     .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     .modal-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-label {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #071911;
+    }
+
+    .form-input, .form-select, .form-control {
+      padding: 10px 12px;
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      border-radius: 10px;
+      font-size: 0.875rem;
+      font-family: inherit;
+      color: #071911;
+      background: #ffffff;
+      outline: none;
+      width: 100%;
+      box-sizing: border-box;
+
+      &:focus {
+        border-color: #10B981;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+      }
+    }
+
+    textarea.form-control {
+      resize: vertical;
+      min-height: 60px;
+    }
   `]
 })
 export class ToursListaComponent implements OnInit {

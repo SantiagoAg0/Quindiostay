@@ -14,6 +14,7 @@ import { ClienteDto } from '../../core/models/cliente.model';
 import { IconComponent } from '../../shared/icon/icon.component';
 import { PillEstadoComponent } from '../../shared/pill-estado/pill-estado.component';
 import { TablaVaciaComponent } from '../../shared/tabla-vacia/tabla-vacia.component';
+import { AuthService } from '../../core/auth/auth.service';
 
 @Component({
   selector: 'app-notificaciones-lista',
@@ -33,12 +34,12 @@ import { TablaVaciaComponent } from '../../shared/tabla-vacia/tabla-vacia.compon
         <div>
           <div class="breadcrumb">
             <app-icon name="bell" [size]="14"></app-icon>
-            <span>Comunicaciones · Mensajería y Alertas</span>
+            <span>{{ authService.esCliente() ? 'Mis Notificaciones y Alertas' : 'Comunicaciones · Mensajería y Alertas' }}</span>
           </div>
-          <h1 class="page-title">Centro de Notificaciones</h1>
-          <p class="page-subtitle">Historial de alertas de viaje, confirmaciones de pago y recordatorios automáticos.</p>
+          <h1 class="page-title">{{ authService.esCliente() ? 'Buzón de Notificaciones' : 'Centro de Notificaciones' }}</h1>
+          <p class="page-subtitle">{{ authService.esCliente() ? 'Consulta tus confirmaciones de viaje, recordatorios de tours y novedades.' : 'Historial de alertas de viaje, confirmaciones de pago y recordatorios automáticos.' }}</p>
         </div>
-        <button class="btn btn-primary" (click)="abrirModalCrear()">
+        <button *ngIf="!authService.esCliente()" class="btn btn-primary" (click)="abrirModalCrear()">
           <app-icon name="plus" [size]="16"></app-icon>
           <span>Nueva Notificación</span>
         </button>
@@ -602,6 +603,7 @@ export class NotificacionesListaComponent implements OnInit {
   private notificacionesService = inject(NotificacionesService);
   private clientesService = inject(ClientesService);
   private fb = inject(FormBuilder);
+  authService = inject(AuthService);
 
   notificaciones: NotificacionDto[] = [];
   notificacionesFiltradas: NotificacionDto[] = [];

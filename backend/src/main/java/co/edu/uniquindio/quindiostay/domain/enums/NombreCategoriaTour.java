@@ -7,5 +7,6 @@ public enum NombreCategoriaTour {
     CULTURAL,
     AVENTURA,
     NATURALEZA,
-    CAFETERO
+    CAFETERO,
+    GASTRONOMICO
 }

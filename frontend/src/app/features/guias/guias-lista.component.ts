@@ -291,25 +291,30 @@ import { TablaVaciaComponent } from '../../shared/tabla-vacia/tabla-vacia.compon
     }
 
     .filter-chip {
-      padding: 5px 12px;
-      border-radius: 8px;
-      border: 1px solid var(--color-border);
-      background: #ffffff;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      background: rgba(16, 185, 129, 0.08);
       font-size: 0.8125rem;
       font-weight: 600;
-      color: var(--color-ink-muted);
+      color: var(--color-primary-dark);
       cursor: pointer;
-      transition: all 0.2s ease;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
       &:hover {
+        background: rgba(16, 185, 129, 0.16);
         border-color: var(--color-primary);
-        color: var(--color-primary);
+        color: var(--color-primary-dark);
+        transform: translateY(-1px);
+        box-shadow: 0 3px 8px rgba(16, 185, 129, 0.15);
       }
 
       &.active {
-        background: var(--color-primary-dark);
+        background: linear-gradient(135deg, #10B981 0%, #047857 100%);
         color: #ffffff;
-        border-color: var(--color-primary-dark);
+        border-color: transparent;
+        box-shadow: 0 3px 10px rgba(16, 185, 129, 0.3);
       }
     }
 
@@ -448,12 +453,20 @@ import { TablaVaciaComponent } from '../../shared/tabla-vacia/tabla-vacia.compon
       display: inline-flex;
       align-items: center;
       gap: 5px;
-      padding: 3px 8px;
-      border-radius: 6px;
-      background: rgba(11, 45, 31, 0.06);
+      padding: 4px 10px;
+      border-radius: 9999px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.2);
       color: var(--color-primary-dark);
       font-size: 0.75rem;
       font-weight: 600;
+      letter-spacing: 0.02em;
+      transition: all 0.2s;
+
+      &:hover {
+        background: rgba(16, 185, 129, 0.18);
+        border-color: rgba(16, 185, 129, 0.35);
+      }
     }
 
     .no-idiomas {

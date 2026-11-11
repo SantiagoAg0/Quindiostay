@@ -13,6 +13,8 @@ import co.edu.uniquindio.quindiostay.repository.PagoRepository;
 import co.edu.uniquindio.quindiostay.repository.ReservaRepository;
 import co.edu.uniquindio.quindiostay.repository.ReservaTourRepository;
 import lombok.RequiredArgsConstructor;
+import co.edu.uniquindio.quindiostay.security.UsuarioPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
@@ -32,8 +34,19 @@ public class PagoService {
 
     @Transactional(readOnly = true)
     public List<PagoDetalleDto> listar(Long idReservaFiltro, EstadoPago estadoFiltro) {
+        var auth = SecurityContextHolder.getContext().getAuthentication();
         List<Pago> pagos;
-        if (idReservaFiltro != null) {
+
+        if (auth != null && auth.getPrincipal() instanceof UsuarioPrincipal principal && "CLIENTE".equalsIgnoreCase(principal.getRol())) {
+            // El cliente solo puede consultar sus propios pagos
+            pagos = pagoRepository.findByReservaClienteIdCliente(principal.getId());
+            if (idReservaFiltro != null) {
+                pagos = pagos.stream().filter(p -> p.getReserva().getIdReserva().equals(idReservaFiltro)).toList();
+            }
+            if (estadoFiltro != null) {
+                pagos = pagos.stream().filter(p -> p.getEstado() == estadoFiltro).toList();
+            }
+        } else if (idReservaFiltro != null) {
             pagos = pagoRepository.findByReservaIdReserva(idReservaFiltro);
         } else if (estadoFiltro != null) {
             pagos = pagoRepository.findByEstado(estadoFiltro);

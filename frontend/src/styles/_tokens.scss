@@ -4,18 +4,19 @@
 // ============================================================
 
 // --- Tipografía Google Fonts ---
+$font-brand:   'Caveat', cursive, sans-serif;
 $font-heading: 'Outfit', 'Syne', -apple-system, sans-serif;
 $font-body:    'Plus Jakarta Sans', -apple-system, sans-serif;
 
-// --- Paleta de Colores Evolucionada ---
-$forest-deep:  #071911; // Fondo profundo bosque
-$forest:       #0B2D1F; // Verde Bosque Profundo
-$pine:         #0C3826; // Pino intermedio
+// --- Paleta de Colores Evolucionada (Verde Bosque Cálido Orgánico Más Claro) ---
+$forest-deep:  #142B20; // Verde bosque profundo aclarado, cálido y natural
+$forest:       #1E4D36; // Verde Bosque rico y luminoso
+$pine:         #235C41; // Pino intermedio luminoso
 $emerald:      #10B981; // Verde Esmeralda vivo
 $emerald-dark: #059669; // Verde Esmeralda oscuro
 $leaf:         #34D399; // Menta brillante
 $mint:         #A7F3D0; // Menta suave para acentos
-$mist:         #F3F8F4; // Fondo claro limpio
+$mist:         #F4F8F5; // Fondo claro limpio con toque cálido orgánico
 $white:        #FFFFFF;
 
 // --- Tonos Carbón Sofisticados (Sin negro puro #000) ---
@@ -59,6 +60,7 @@ $transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
 
 // --- Variables CSS globales ---
 :root {
+  --font-brand:         #{$font-brand};
   --font-heading:       #{$font-heading};
   --font-body:          #{$font-body};
 

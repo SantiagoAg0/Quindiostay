@@ -36,7 +36,7 @@ import { AuthService } from '../../core/auth/auth.service';
           <h1 class="page-title">Programación de Salidas</h1>
           <p class="page-subtitle">Programa, administra y monitorea la ocupación y aforo de cada tour en el Quindío.</p>
         </div>
-        <button class="btn btn-primary" (click)="abrirModalCrear()">
+        <button *ngIf="!authService.esCliente()" class="btn btn-primary" (click)="abrirModalCrear()">
           <app-icon name="plus" [size]="16"></app-icon>
           <span>Nueva Salida</span>
         </button>
@@ -99,7 +99,7 @@ import { AuthService } from '../../core/auth/auth.service';
                 <th>Idioma</th>
                 <th>Ocupación</th>
                 <th>Estado</th>
-                <th class="actions-col">Acciones</th>
+                <th *ngIf="!authService.esCliente()" class="actions-col">Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -134,7 +134,7 @@ import { AuthService } from '../../core/auth/auth.service';
                 <td>
                   <app-pill-estado [estado]="s.estado"></app-pill-estado>
                 </td>
-                <td class="actions-col">
+                <td *ngIf="!authService.esCliente()" class="actions-col">
                   <div class="actions-group">
                     <button class="action-btn edit" (click)="abrirModalEditar(s)" title="Editar salida">
                       <app-icon name="edit" [size]="15"></app-icon>
@@ -163,8 +163,10 @@ import { AuthService } from '../../core/auth/auth.service';
         </app-tabla-vacia>
 
         <!-- Paginación -->
-        <div *ngIf="totalPaginas > 1" class="pagination-footer">
-          <span class="page-info">Página {{ paginaActual + 1 }} de {{ totalPaginas }} ({{ totalElementos }} salidas)</span>
+        <div *ngIf="!cargando && totalElementos > 0" class="pagination-footer">
+          <span class="page-info">
+            Página {{ totalPaginas > 0 ? paginaActual + 1 : 1 }} de {{ totalPaginas > 0 ? totalPaginas : 1 }} ({{ totalElementos }} salidas)
+          </span>
           <div class="pagination-controls">
             <button
               class="page-btn"
@@ -495,7 +497,8 @@ import { AuthService } from '../../core/auth/auth.service';
   `]
 })
 export class SalidasListaComponent implements OnInit {
-  private salidasService = inject(SalidasService);
+  salidasService = inject(SalidasService);
+  authService = inject(AuthService);
 
   salidas: SalidaTour[] = [];
   tours: TourResumen[] = [];

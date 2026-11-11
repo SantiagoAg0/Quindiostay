@@ -51,7 +51,7 @@ import { IconComponent } from '../../../shared/icon/icon.component';
 
         <div class="brand-quote">
           <p class="quote-text">"Cada salida, con su cupo y su guía confirmados."</p>
-          <span class="quote-sub">Universidad del Quindío · Bases de Datos I</span>
+          <span class="quote-sub">Experiencias Auténticas en el Quindío</span>
         </div>
       </div>
 
@@ -141,25 +141,6 @@ import { IconComponent } from '../../../shared/icon/icon.component';
               ¿Aún no tienes cuenta? <strong>Regístrate como Cliente</strong>
             </button>
           </div>
-
-          <!-- Credenciales Rápidas para Evaluación -->
-          <div class="credentials-box">
-            <div class="credentials-title">Accesos Rápidos de Demostración:</div>
-            <div class="chips-container">
-              <button type="button" class="cred-chip" (click)="autocompletar('admin', 'Admin123*', 'PERSONAL')">
-                <span class="chip-dot dot-admin"></span> Admin
-              </button>
-              <button type="button" class="cred-chip" (click)="autocompletar('operador', 'Operador123*', 'PERSONAL')">
-                <span class="chip-dot dot-operador"></span> Operador
-              </button>
-              <button type="button" class="cred-chip" (click)="autocompletar('encargado', 'Encargado123*', 'PERSONAL')">
-                <span class="chip-dot dot-encargado"></span> Encargado
-              </button>
-              <button type="button" class="cred-chip" (click)="autocompletar('cliente@correo.com', 'Cliente123*', 'CLIENTE')">
-                <span class="chip-dot dot-cliente"></span> Cliente
-              </button>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -231,7 +212,7 @@ import { IconComponent } from '../../../shared/icon/icon.component';
             </div>
           </div>
 
-          <div class="modal-section-title">Preferencias de Perfil (RN13 / RN15 / RN16)</div>
+          <div class="modal-section-title">Preferencias de Perfil y Notificaciones</div>
 
           <div class="form-grid-3">
             <div class="form-group">
@@ -298,6 +279,17 @@ import { IconComponent } from '../../../shared/icon/icon.component';
       overflow: hidden;
       border-right: 1px solid rgba(255, 255, 255, 0.08);
 
+      &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 100 100'%3E%3Cpath d='M50 5 C55 25 70 35 90 40 C70 45 55 55 50 75 C45 55 30 45 10 40 C30 35 45 25 50 5 Z M50 20 C52 32 60 38 75 40 C60 42 52 48 50 60 C48 48 40 42 25 40 C40 38 48 32 50 20 Z' fill='%23ffffff' fill-opacity='0.02'/%3E%3Cpath d='M50 5 L50 75' stroke='%23ffffff' stroke-opacity='0.015' stroke-width='0.75' stroke-linecap='round'/%3E%3C/svg%3E");
+        background-repeat: repeat;
+        background-size: 160px 160px;
+        pointer-events: none;
+        z-index: 1;
+      }
+
       &::before {
         content: '';
         position: absolute;
@@ -331,11 +323,12 @@ import { IconComponent } from '../../../shared/icon/icon.component';
       }
 
       .brand-name {
-        font-family: var(--font-heading, 'Outfit', sans-serif);
-        font-size: 1.5rem;
-        font-weight: 800;
-        letter-spacing: -0.03em;
+        font-family: var(--font-brand, 'Caveat', cursive);
+        font-size: 2.15rem;
+        font-weight: 700;
+        letter-spacing: -0.01em;
         color: #FFFFFF;
+        line-height: 1;
       }
     }
 
@@ -483,16 +476,20 @@ import { IconComponent } from '../../../shared/icon/icon.component';
         font-family: var(--font-body, 'Plus Jakarta Sans', sans-serif);
         font-size: 0.8125rem;
         font-weight: 600;
-        color: #9CA3AF;
+        color: #D1D5DB;
         background: transparent;
         border: none;
         border-radius: 8px;
         cursor: pointer;
         transition: all 0.2s;
 
+        &:hover {
+          color: #FFFFFF;
+        }
+
         &.active {
-          background: rgba(16, 185, 129, 0.2);
-          border: 1px solid rgba(16, 185, 129, 0.35);
+          background: rgba(16, 185, 129, 0.25);
+          border: 1px solid rgba(16, 185, 129, 0.4);
           color: #FFFFFF;
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
@@ -551,22 +548,23 @@ import { IconComponent } from '../../../shared/icon/icon.component';
         .form-input {
           width: 100%;
           padding: 12px 14px 12px 40px;
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid rgba(255, 255, 255, 0.12);
+          background: rgba(255, 255, 255, 0.08);
+          border: 1px solid rgba(255, 255, 255, 0.2);
           border-radius: 12px;
           color: #FFFFFF;
           font-size: 0.875rem;
           outline: none;
+          box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(16, 185, 129, 0.05);
           transition: all 0.2s;
 
           &:focus {
             border-color: #10B981;
-            background: rgba(255, 255, 255, 0.08);
-            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+            background: rgba(255, 255, 255, 0.12);
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2), 0 0 0 3px rgba(16, 185, 129, 0.25);
           }
 
           &::placeholder {
-            color: #6B7280;
+            color: #9CA3AF;
           }
         }
       }
@@ -624,59 +622,6 @@ import { IconComponent } from '../../../shared/icon/icon.component';
         &:hover {
           color: #FFFFFF;
           text-decoration: underline;
-        }
-      }
-    }
-
-    .credentials-box {
-      margin-top: 24px;
-      padding-top: 20px;
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
-
-      .credentials-title {
-        font-size: 0.75rem;
-        font-weight: 600;
-        color: #9CA3AF;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        margin-bottom: 10px;
-      }
-
-      .chips-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-
-        .cred-chip {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          padding: 6px 12px;
-          background: rgba(255, 255, 255, 0.06);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          border-radius: 20px;
-          color: #E5E7EB;
-          font-size: 0.75rem;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.2s;
-
-          &:hover {
-            background: rgba(16, 185, 129, 0.15);
-            border-color: #10B981;
-            transform: translateY(-1px);
-          }
-
-          .chip-dot {
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-
-            &.dot-admin { background: #10B981; }
-            &.dot-operador { background: #3B82F6; }
-            &.dot-encargado { background: #F59E0B; }
-            &.dot-cliente { background: #A855F7; }
-          }
         }
       }
     }
@@ -870,11 +815,11 @@ export class LoginComponent {
       error: (err) => {
         this.cargando = false;
         if (err.status === 401) {
-          this.errorMensaje = err.error?.mensaje || 'Credenciales incorrectas';
+          this.errorMensaje = 'Credenciales incorrectas. Verifique su usuario o correo y contraseña.';
         } else if (err.status === 403) {
-          this.errorMensaje = 'Usuario bloqueado';
+          this.errorMensaje = 'Acceso denegado o usuario inactivo.';
         } else {
-          this.errorMensaje = err.error?.mensaje || 'Error al conectar con el servidor';
+          this.errorMensaje = 'Error de conexión. Intente nuevamente en unos momentos.';
         }
       }
     });
@@ -923,7 +868,13 @@ export class LoginComponent {
       },
       error: (err) => {
         this.registrando = false;
-        this.errorMensaje = err.error?.mensaje || 'Error al registrar cliente';
+        if (err.status === 400) {
+          this.errorMensaje = err.error?.mensaje || 'Datos de registro inválidos. Verifique la información ingresada.';
+        } else if (err.status === 409) {
+          this.errorMensaje = 'Ya existe una cuenta con este correo o documento.';
+        } else {
+          this.errorMensaje = 'Error de conexión. Intente nuevamente en unos momentos.';
+        }
       }
     });
   }

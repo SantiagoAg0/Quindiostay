@@ -32,20 +32,24 @@ import { ReservaDetalleDto } from '../../core/models/reserva.model';
             <span>Plataforma Turística Oficial del Quindío</span>
           </div>
           <h1 class="hero-title">
-            Panel de Operaciones, <span class="highlight">{{ nombreUsuario }}</span>
+            {{ authService.esCliente() ? 'Bienvenido a tus Experiencias,' : 'Panel de Operaciones,' }} <span class="highlight">{{ nombreUsuario }}</span>
           </h1>
           <p class="hero-subtitle">
-            Monitorea en tiempo real la ocupación de salidas, reservas, pagos y rendimiento de prestadores en el Paisaje Cultural Cafetero.
+            {{ authService.esCliente() ? 'Explora los mejores tours del Quindío, consulta tus reservas activas y gestiona tus itinerarios de viaje.' : 'Monitorea en tiempo real la ocupación de salidas, reservas, pagos y rendimiento de prestadores en el Paisaje Cultural Cafetero.' }}
           </p>
         </div>
         <div class="hero-actions">
-          <a routerLink="/salidas" class="action-btn primary">
+          <a *ngIf="!authService.esCliente()" routerLink="/salidas" class="action-btn primary">
             <app-icon name="plus" [size]="16"></app-icon>
             <span>Programar Salida</span>
           </a>
+          <a *ngIf="authService.esCliente()" routerLink="/tours" class="action-btn primary">
+            <app-icon name="compass" [size]="16"></app-icon>
+            <span>Explorar Tours</span>
+          </a>
           <a routerLink="/reservas" class="action-btn secondary">
             <app-icon name="ticket" [size]="16"></app-icon>
-            <span>Nueva Reserva</span>
+            <span>{{ authService.esCliente() ? 'Mis Reservas' : 'Nueva Reserva' }}</span>
           </a>
         </div>
       </section>
@@ -624,7 +628,7 @@ import { ReservaDetalleDto } from '../../core/models/reserva.model';
   `]
 })
 export class DashboardComponent implements OnInit {
-  private authService = inject(AuthService);
+  authService = inject(AuthService);
   private toursService = inject(ToursService);
   private salidasService = inject(SalidasService);
   private reservasService = inject(ReservasService);

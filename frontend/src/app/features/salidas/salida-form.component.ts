@@ -109,29 +109,40 @@ import { IdiomaResumen } from '../../core/models/idioma.model';
     .drawer-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(10, 10, 10, 0.4);
-      z-index: 40;
-      backdrop-filter: blur(2px);
+      background: rgba(10, 20, 15, 0.65);
+      z-index: 1050;
+      backdrop-filter: blur(4px);
     }
     .drawer-content {
       position: fixed;
       top: 0;
       right: 0;
-      width: 480px;
-      max-width: 90vw;
+      bottom: 0;
+      width: 520px;
+      max-width: 100vw;
       height: 100vh;
+      height: 100dvh;
       background: var(--white);
-      z-index: 50;
+      z-index: 1060;
       display: flex;
       flex-direction: column;
-      box-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
+      box-shadow: -10px 0 35px rgba(0, 0, 0, 0.25);
+      overflow: hidden;
+      box-sizing: border-box;
+      animation: slideInRight 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes slideInRight {
+      from { transform: translateX(100%); }
+      to { transform: translateX(0); }
     }
     .drawer-header {
-      padding: 24px;
+      padding: 20px 24px;
       border-bottom: 1px solid var(--line);
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
+      flex-shrink: 0;
+      background: #ffffff;
       h3 { margin: 0 0 4px; font-size: 1.25rem; font-weight: 700; color: var(--ink); }
       p { margin: 0; font-size: 0.8125rem; color: var(--mute); }
       .close-btn {
@@ -141,6 +152,9 @@ import { IdiomaResumen } from '../../core/models/idioma.model';
         color: var(--mute);
         cursor: pointer;
         padding: 4px;
+        border-radius: 6px;
+        transition: all 0.2s;
+        &:hover { color: var(--ink); background: rgba(0,0,0,0.05); }
       }
     }
     .error-banner {
@@ -149,14 +163,17 @@ import { IdiomaResumen } from '../../core/models/idioma.model';
       padding: 12px 24px;
       font-size: 0.875rem;
       border-bottom: 1px solid #FCA5A5;
+      flex-shrink: 0;
     }
     .drawer-form {
-      flex: 1;
+      flex: 1 1 auto;
       padding: 24px;
       overflow-y: auto;
+      overflow-x: hidden;
       display: flex;
       flex-direction: column;
       gap: 18px;
+      box-sizing: border-box;
     }
     .form-group {
       display: flex;
@@ -191,11 +208,16 @@ import { IdiomaResumen } from '../../core/models/idioma.model';
     .hint { font-size: 0.75rem; color: #DC2626; }
     .drawer-actions {
       margin-top: auto;
-      padding-top: 24px;
+      padding-top: 18px;
+      padding-bottom: 6px;
       border-top: 1px solid var(--line);
       display: flex;
       justify-content: flex-end;
       gap: 12px;
+      position: sticky;
+      bottom: 0;
+      background: var(--white);
+      z-index: 10;
     }
     .btn-cancel {
       padding: 10px 18px;

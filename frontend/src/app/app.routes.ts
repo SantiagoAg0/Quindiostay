@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { LoginComponent } from './features/auth/login/login.component';
 import { ShellComponent } from './layout/shell.component';
 import { authGuard } from './core/auth/auth.guard';
+import { rolGuard } from './core/auth/rol.guard';
 import { DashboardComponent } from './features/dashboard/dashboard.component';
 import { SalidasListaComponent } from './features/salidas/salidas-lista.component';
 import { ToursListaComponent } from './features/tours/tours-lista.component';
@@ -27,16 +28,46 @@ export const routes: Routes = [
       { path: 'dashboard', component: DashboardComponent },
       { path: 'salidas', component: SalidasListaComponent },
       { path: 'tours', component: ToursListaComponent },
-      { path: 'guias', component: GuiasListaComponent },
+      {
+        path: 'guias',
+        component: GuiasListaComponent,
+        canActivate: [rolGuard],
+        data: { roles: ['ADMINISTRADOR_PLATAFORMA', 'OPERADOR', 'ENCARGADO_PRESTADOR'] }
+      },
       { path: 'reservas', component: ReservasListaComponent },
       { path: 'pagos', component: PagosListaComponent },
-      { path: 'prestadores', component: PrestadoresListaComponent },
-      { path: 'planes', component: PlanesListaComponent },
+      {
+        path: 'prestadores',
+        component: PrestadoresListaComponent,
+        canActivate: [rolGuard],
+        data: { roles: ['ADMINISTRADOR_PLATAFORMA', 'ENCARGADO_PRESTADOR'] }
+      },
+      {
+        path: 'planes',
+        component: PlanesListaComponent,
+        canActivate: [rolGuard],
+        data: { roles: ['ADMINISTRADOR_PLATAFORMA', 'ENCARGADO_PRESTADOR'] }
+      },
       { path: 'clientes', component: ClientesListaComponent },
       { path: 'notificaciones', component: NotificacionesListaComponent },
-      { path: 'usuarios', component: UsuariosListaComponent },
-      { path: 'reportes', component: ReportesIndiceComponent },
-      { path: 'reportes/guias-mas-salidas', component: ReporteGuiasSalidasComponent }
+      {
+        path: 'usuarios',
+        component: UsuariosListaComponent,
+        canActivate: [rolGuard],
+        data: { roles: ['ADMINISTRADOR_PLATAFORMA'] }
+      },
+      {
+        path: 'reportes',
+        component: ReportesIndiceComponent,
+        canActivate: [rolGuard],
+        data: { roles: ['ADMINISTRADOR_PLATAFORMA', 'OPERADOR', 'ENCARGADO_PRESTADOR'] }
+      },
+      {
+        path: 'reportes/guias-mas-salidas',
+        component: ReporteGuiasSalidasComponent,
+        canActivate: [rolGuard],
+        data: { roles: ['ADMINISTRADOR_PLATAFORMA', 'OPERADOR', 'ENCARGADO_PRESTADOR'] }
+      }
     ]
   },
   { path: '**', redirectTo: '' }
