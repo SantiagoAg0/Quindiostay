@@ -83,6 +83,25 @@ import { IconComponent } from '../../../shared/icon/icon.component';
             </button>
           </div>
 
+          <!-- Cuentas de Acceso Rápido de Prueba -->
+          <div class="quick-access-box" *ngIf="tipoIngreso === 'PERSONAL'">
+            <span class="quick-title">Cuentas demo de personal:</span>
+            <div class="quick-pills">
+              <button type="button" class="quick-pill" (click)="autocompletar('admin', 'Admin123*', 'PERSONAL')">Admin</button>
+              <button type="button" class="quick-pill" (click)="autocompletar('operador', 'Operador123*', 'PERSONAL')">Operador</button>
+              <button type="button" class="quick-pill" (click)="autocompletar('enc_cocora', 'Encargado123*', 'PERSONAL')">Encargado</button>
+            </div>
+          </div>
+
+          <div class="quick-access-box" *ngIf="tipoIngreso === 'CLIENTE'">
+            <span class="quick-title">Clientes demo con perfil (Clave: Cliente123*):</span>
+            <div class="quick-pills">
+              <button type="button" class="quick-pill" (click)="autocompletar('emily.johnson@hotmail.com', 'Cliente123*', 'CLIENTE')">Emily Johnson</button>
+              <button type="button" class="quick-pill" (click)="autocompletar('lucas.muller@gmail.com', 'Cliente123*', 'CLIENTE')">Lucas Müller</button>
+              <button type="button" class="quick-pill" (click)="autocompletar('carlos.fernandez@yahoo.com', 'Cliente123*', 'CLIENTE')">Carlos Fernández</button>
+            </div>
+          </div>
+
           <!-- Alerta de error -->
           <div *ngIf="errorMensaje" class="error-alert animate-fade-in">
             <app-icon name="alert" [size]="18"></app-icon>
@@ -195,15 +214,20 @@ import { IconComponent } from '../../../shared/icon/icon.component';
             </div>
 
             <div class="form-group">
-              <label class="form-label">Teléfono</label>
+              <label class="form-label">Teléfono (Celular Colombia 10 dígitos) *</label>
               <input type="text" class="form-input" placeholder="Ej: 3101234567" formControlName="telefono" />
             </div>
           </div>
 
-          <div class="form-grid-2">
+          <div class="form-grid-3">
+            <div class="form-group">
+              <label class="form-label">Fecha Nacimiento *</label>
+              <input type="date" class="form-input" formControlName="fechaNacimiento" />
+            </div>
+
             <div class="form-group">
               <label class="form-label">Ciudad de Origen</label>
-              <input type="text" class="form-input" placeholder="Ej: Armenia, Bogotá, Medellín" formControlName="ciudadOrigen" />
+              <input type="text" class="form-input" placeholder="Ej: Armenia, Bogotá" formControlName="ciudadOrigen" />
             </div>
 
             <div class="form-group">
@@ -462,7 +486,7 @@ import { IconComponent } from '../../../shared/icon/icon.component';
       background: rgba(0, 0, 0, 0.3);
       padding: 4px;
       border-radius: 12px;
-      margin-bottom: 22px;
+      margin-bottom: 16px;
       border: 1px solid rgba(255, 255, 255, 0.06);
 
       .tab-btn {
@@ -491,6 +515,45 @@ import { IconComponent } from '../../../shared/icon/icon.component';
           border: 1px solid rgba(16, 185, 129, 0.4);
           color: #FFFFFF;
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+      }
+    }
+
+    .quick-access-box {
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px dashed rgba(16, 185, 129, 0.25);
+      border-radius: 12px;
+      padding: 10px 14px;
+      margin-bottom: 20px;
+
+      .quick-title {
+        display: block;
+        font-size: 0.75rem;
+        color: #9CA3AF;
+        margin-bottom: 6px;
+        font-weight: 600;
+      }
+
+      .quick-pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+
+        .quick-pill {
+          background: rgba(255, 255, 255, 0.08);
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          color: #E5E7EB;
+          font-size: 0.75rem;
+          padding: 4px 10px;
+          border-radius: 9999px;
+          cursor: pointer;
+          transition: all 0.2s;
+
+          &:hover {
+            background: #10B981;
+            color: #FFFFFF;
+            border-color: #10B981;
+          }
         }
       }
     }

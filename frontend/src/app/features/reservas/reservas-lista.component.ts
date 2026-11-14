@@ -141,6 +141,12 @@ import { TablaVaciaComponent } from '../../shared/tabla-vacia/tabla-vacia.compon
                     <button class="action-btn view" (click)="verDetalle(r)" title="Ver detalle de reserva">
                       <app-icon name="eye" [size]="15"></app-icon>
                     </button>
+                    <a [href]="'/api/plantillas/reserva/' + r.idReserva" target="_blank" class="action-btn pdf-btn" title="Descargar Comprobante PDF (Voucher)">
+                      <app-icon name="file-text" [size]="15"></app-icon>
+                    </a>
+                    <a *ngIf="tieneMenores(r)" [href]="'/api/plantillas/autorizacion-menor/' + r.idReserva" target="_blank" class="action-btn minor-btn" title="Descargar Autorización para Menores (PDF)">
+                      <app-icon name="shield" [size]="15"></app-icon>
+                    </a>
                     <button
                       *ngIf="r.saldoPendiente > 0 && r.estado !== 'CANCELADA'"
                       class="action-btn pay"
@@ -152,7 +158,7 @@ import { TablaVaciaComponent } from '../../shared/tabla-vacia/tabla-vacia.compon
                       *ngIf="r.estado !== 'CANCELADA'"
                       class="action-btn cancel"
                       (click)="abrirModalCancelar(r)"
-                      title="Cancelar reserva (RN05)">
+                      title="Cancelar reserva (RN08)">
                       <app-icon name="ban" [size]="15"></app-icon>
                     </button>
                   </div>
@@ -398,6 +404,14 @@ import { TablaVaciaComponent } from '../../shared/tabla-vacia/tabla-vacia.compon
             </div>
 
             <div class="modal-footer">
+              <a [href]="'/api/plantillas/reserva/' + reservaDetalle.idReserva" target="_blank" class="btn btn-secondary">
+                <app-icon name="file-text" [size]="16"></app-icon>
+                <span>Descargar Voucher (PDF)</span>
+              </a>
+              <a *ngIf="tieneMenores(reservaDetalle)" [href]="'/api/plantillas/autorizacion-menor/' + reservaDetalle.idReserva" target="_blank" class="btn btn-secondary">
+                <app-icon name="shield" [size]="16"></app-icon>
+                <span>Autorización Menores (PDF)</span>
+              </a>
               <button type="button" class="btn btn-secondary" (click)="reservaDetalle = null">
                 Cerrar
               </button>
@@ -1224,6 +1238,11 @@ export class ReservasListaComponent implements OnInit {
     const hayAdulto = paxs.some((p) => p.edad !== null && p.edad !== undefined && p.edad >= 18);
 
     return hayMenor && !hayAdulto;
+  }
+
+  tieneMenores(reserva: ReservaDetalleDto): boolean {
+    if (!reserva || !reserva.participantes) return false;
+    return reserva.participantes.some((p) => p.edad !== null && p.edad !== undefined && p.edad < 18);
   }
 
   ngOnInit(): void {

@@ -101,7 +101,7 @@ import { AuthService } from '../../core/auth/auth.service';
                 <th>Referencia</th>
                 <th>Fecha y Hora</th>
                 <th>Estado</th>
-                <th *ngIf="!authService.esCliente()" class="actions-col">Acciones</th>
+                <th class="actions-col">Comprobante</th>
               </tr>
             </thead>
             <tbody>
@@ -134,10 +134,13 @@ import { AuthService } from '../../core/auth/auth.service';
                 <td>
                   <app-pill-estado [estado]="p.estado"></app-pill-estado>
                 </td>
-                <td *ngIf="!authService.esCliente()" class="actions-col">
+                <td class="actions-col">
                   <div class="actions-group">
+                    <a [href]="'/api/plantillas/pago/' + p.idPago" target="_blank" class="action-btn pdf-btn" title="Descargar Recibo de Pago (PDF)">
+                      <app-icon name="file-text" [size]="14"></app-icon>
+                    </a>
                     <button
-                      *ngIf="p.estado === 'EXITOSO'"
+                      *ngIf="!authService.esCliente() && p.estado === 'EXITOSO'"
                       class="action-btn refund"
                       (click)="confirmarReembolso(p)"
                       title="Emitir reembolso">
