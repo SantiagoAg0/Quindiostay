@@ -58,17 +58,27 @@ public class NotificacionService {
         Cliente cliente = clienteRepository.findById(req.idCliente())
                 .orElseThrow(() -> new RecursoNoEncontradoException("Cliente", req.idCliente()));
 
-        // RN11: Promociones solo se envían a clientes que las aceptaron
+        // RN11: Promociones solo se envian a clientes que las aceptaron
         if (req.tipo() == TipoNotificacion.PROMOCION) {
             var perfil = perfilClienteRepository.findById(req.idCliente());
             if (perfil.isEmpty() || perfil.get().getAceptaPromociones() != AceptaPromociones.SI) {
                 throw new ReglaNegocioException("RN11: Las promociones solo pueden enviarse a clientes que aceptaron recibirlas");
             }
+            // PROMOCION debe tener reserva null
+            if (req.idReserva() != null) {
+                throw new ReglaNegocioException("Las notificaciones de tipo PROMOCION no deben estar asociadas a una reserva");
+            }
         }
 
         Reserva reserva = null;
         if (req.idReserva() != null) {
-            reserva = reservaRepository.findById(req.idReserva()).orElse(null);
+            reserva = reservaRepository.findById(req.idReserva())
+                    .orElseThrow(() -> new RecursoNoEncontradoException("Reserva", req.idReserva()));
+
+            // D12: El cliente de la notificacion debe coincidir con el cliente de la reserva
+            if (!reserva.getCliente().getIdCliente().equals(req.idCliente())) {
+                throw new ReglaNegocioException("D12: El cliente de la notificacion debe coincidir con el cliente de la reserva");
+            }
         }
 
         Notificacion n = new Notificacion();
@@ -89,6 +99,17 @@ public class NotificacionService {
     public NotificacionDto marcarLeida(Long id) {
         Notificacion n = notificacionRepository.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Notificacion", id));
+
+        // CLIENTE solo puede marcar sus propias notificaciones
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getPrincipal() instanceof UsuarioPrincipal principal) {
+            if ("CLIENTE".equalsIgnoreCase(principal.getRol())) {
+                if (!n.getCliente().getIdCliente().equals(principal.getId())) {
+                    throw new ReglaNegocioException("Solo puedes marcar como leidas tus propias notificaciones");
+                }
+            }
+        }
+
         n.setEstado(EstadoNotificacion.LEIDA);
         n = notificacionRepository.save(n);
         return convertirADto(n);

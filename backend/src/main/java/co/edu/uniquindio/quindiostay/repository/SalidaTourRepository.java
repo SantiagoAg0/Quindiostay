@@ -40,10 +40,10 @@ public interface SalidaTourRepository extends JpaRepository<SalidaTour, Long> {
             Pageable pageable
     );
 
-    @Query("SELECT COUNT(p) FROM Participante p WHERE p.reservaTour.salida.idSalida = :idSalida")
+    @Query("SELECT COUNT(p) FROM Participante p WHERE p.reservaTour.salida.idSalida = :idSalida AND p.reservaTour.reserva.estado <> 'CANCELADA'")
     long contarParticipantes(@Param("idSalida") Long idSalida);
 
-    @Query("SELECT COUNT(rt) FROM ReservaTour rt WHERE rt.salida.idSalida = :idSalida")
+    @Query("SELECT COUNT(rt) FROM ReservaTour rt WHERE rt.salida.idSalida = :idSalida AND rt.reserva.estado <> 'CANCELADA'")
     long contarReservas(@Param("idSalida") Long idSalida);
 
     @Query("SELECT COUNT(s) > 0 FROM SalidaTour s " +

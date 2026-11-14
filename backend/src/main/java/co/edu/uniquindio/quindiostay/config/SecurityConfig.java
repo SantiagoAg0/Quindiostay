@@ -41,7 +41,6 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**", "/api/health").permitAll()
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/salidas", "/api/salidas/**", "/api/tours", "/api/tours/**", "/api/guias", "/api/guias/**", "/api/idiomas", "/api/idiomas/**").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/tours-gestion/**", "/api/guias-gestion/**", "/api/prestadores/**", "/api/planes/**").authenticated()
                 .requestMatchers("/api/clientes/mi-perfil").authenticated()

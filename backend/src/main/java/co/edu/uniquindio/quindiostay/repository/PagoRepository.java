@@ -17,4 +17,10 @@ public interface PagoRepository extends JpaRepository<Pago, Long> {
 
     @Query("SELECT COALESCE(SUM(p.monto), 0) FROM Pago p WHERE p.reserva.idReserva = :idReserva AND p.estado = 'EXITOSO'")
     BigDecimal sumExitososPorReserva(@Param("idReserva") Long idReserva);
+
+    @Query("SELECT COALESCE(SUM(p.monto), 0) FROM Pago p WHERE p.reserva.idReserva = :idReserva AND p.estado = 'REEMBOLSADO'")
+    BigDecimal sumReembolsadosPorReserva(@Param("idReserva") Long idReserva);
+
+    @Query("SELECT p FROM Pago p WHERE p.reserva.plan.prestador.idPrestador = :idPrestador")
+    List<Pago> findByPrestadorId(@Param("idPrestador") Long idPrestador);
 }

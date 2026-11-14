@@ -221,7 +221,7 @@ import { TablaVaciaComponent } from '../../shared/tabla-vacia/tabla-vacia.compon
               <div class="form-group" *ngIf="authService.esCliente()">
                 <label class="form-label">Cliente Titular</label>
                 <div class="readonly-field">
-                  {{ clientesDisponibles.length ? clientesDisponibles[0].nombres + ' ' + clientesDisponibles[0].apellidos : 'Cargando...' }}
+                  {{ clientesDisponibles.length ? (clientesDisponibles[0].nombres + ' ' + clientesDisponibles[0].apellidos + ' (' + clientesDisponibles[0].correo + ')') : (authService.usuarioActual()?.nombre || 'Cliente Conectado') }}
                 </div>
               </div>
 
@@ -238,7 +238,7 @@ import { TablaVaciaComponent } from '../../shared/tabla-vacia/tabla-vacia.compon
 
               <div class="form-group" *ngIf="authService.esCliente()">
                 <label class="form-label">Canal de Reserva</label>
-                <div class="readonly-field">Portal Web Oficial</div>
+                <div class="readonly-field">Portal Web Oficial (WEB)</div>
               </div>
             </div>
 
@@ -1307,15 +1307,23 @@ export class ReservasListaComponent implements OnInit {
   abrirModalNuevaReserva(): void {
     this.errorMensaje = null;
     const esCliente = this.authService.esCliente();
+    
+    // Asegurar que los catálogos estén disponibles
+    this.cargarCatalogos();
+
     this.formReserva.reset({
-      idSalida: null,
+      idSalida: this.salidasDisponibles.length ? this.salidasDisponibles[0].idSalida : null,
       idPlan: this.planesDisponibles.length ? this.planesDisponibles[0].idPlan : null,
       idCliente: this.clientesDisponibles.length ? this.clientesDisponibles[0].idCliente : null,
-      canal: esCliente ? 'WEB' : 'WEB'
+      canal: 'WEB'
     });
     this.participantesArray.clear();
     this.agregarParticipante(); // 1 default participant
-    this.salidaSeleccionadaObj = null;
+    if (this.salidasDisponibles.length) {
+      this.salidaSeleccionadaObj = this.salidasDisponibles[0];
+    } else {
+      this.salidaSeleccionadaObj = null;
+    }
     this.mostrarModalNueva = true;
   }
 

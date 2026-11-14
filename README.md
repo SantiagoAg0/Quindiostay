@@ -5,7 +5,7 @@
 
 ## Descripcion del Proyecto
 
-QuindioStay es una plataforma integral para la gestion de tours turisticos, guianza certificada y experiencias turísticas en el departamento del Quindio, Colombia. Permite administrar prestadores de servicios turisticos, programar salidas de tour, gestionar reservas con poliza de participantes, procesar pagos parciales y generar reportes operativos.
+QuindioStay es una plataforma integral para la gestion de tours turisticos, guianza certificada y experiencias de ecoturismo en el departamento del Quindio, Colombia. Permite administrar prestadores de servicios turisticos, programar salidas de tour, gestionar reservas con poliza de participantes, procesar pagos parciales y en linea, generar reportes operativos y analiticos avanzados con consultas SQL nativas (`GROUP BY`, `HAVING`, subconsultas) y expedir comprobantes oficiales en PDF.
 
 ## Stack Tecnologico
 
@@ -15,6 +15,7 @@ QuindioStay es una plataforma integral para la gestion de tours turisticos, guia
 | Base de Datos | MySQL 8.0 (puerto 3307) |
 | Frontend | Angular 19 (TypeScript, SCSS, Standalone Components) |
 | Autenticacion | JWT (HS256) |
+| Generacion PDF | OpenPDF / iText |
 
 ## Requisitos Previos
 
@@ -32,7 +33,7 @@ quindiostay/
 ├── README.md
 ├── backend/             Spring Boot 3.3.5 (Java 21, Maven)
 ├── frontend/            Angular 19 (TypeScript, SCSS)
-└── database/            Scripts SQL
+└── database/            Scripts SQL (01_esquema.sql, 02_datos.sql, 03_verificacion.sql, 04_reportes.sql)
 ```
 
 ## Configuracion de Base de Datos (MySQL)
@@ -42,9 +43,13 @@ quindiostay/
    CREATE DATABASE quindiostay CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
    ```
 
-2. Ejecutar los scripts SQL de la carpeta `database/` en orden numerico.
+2. Ejecutar los scripts SQL de la carpeta `database/` en orden numerico:
+   - `01_esquema.sql`: Crea las 19 tablas relacionales con restricciones `CHECK`, llaves foraneas y valores por defecto.
+   - `02_datos.sql`: Inserta los datos realistas de prueba anclados en noviembre de 2026.
+   - `03_verificacion.sql`: Valida el conteo de registros y verifica 0 violaciones de reglas de negocio.
+   - `04_reportes.sql`: Consultas maestras para los 10 reportes analiticos.
 
-3. Las credenciales por defecto de MySQL para desarrollo:
+3. Credenciales de conexion de MySQL para desarrollo:
    - Host: `localhost`
    - Puerto: `3307`
    - Base de datos: `quindiostay`
@@ -55,6 +60,7 @@ quindiostay/
 
 ### Backend (puerto 8080)
 
+En PowerShell (Windows):
 ```powershell
 cd backend
 $env:SPRING_DATASOURCE_URL = "jdbc:mysql://localhost:3307/quindiostay?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Bogota&characterEncoding=UTF-8"
@@ -89,104 +95,65 @@ npm start
 | API Base | http://localhost:8080/api |
 | Swagger UI | http://localhost:8080/swagger-ui.html |
 
-## Credenciales de Prueba
+## Credenciales de Prueba Oficiales
 
 ### Personal Interno (tipo de ingreso: PERSONAL)
 
-| Usuario | Contrasena | Rol | Permisos |
+| Usuario | Contrasena | Rol | Permisos y Alcance |
 |---|---|---|---|
-| `admin` | `Admin123*` | ADMINISTRADOR_PLATAFORMA | Acceso total: tours, salidas, reservas, pagos, prestadores, planes, guias, clientes, usuarios, reportes |
-| `operador` | `Operador123*` | OPERADOR | Operacion: tours, salidas, reservas, pagos, guias, clientes, reportes |
-| `encargado` | `Encargado123*` | ENCARGADO_PRESTADOR | Gestion de prestador: tours, salidas, reservas, pagos, guias, prestadores, planes, reportes |
+| `admin` | `Admin123*` | ADMINISTRADOR_PLATAFORMA | Acceso total: configuracion de plataforma, usuarios internos, catalogo de prestadores, tours, salidas, reservas, cartera, todos los reportes |
+| `operador` | `Operador123*` | OPERADOR | Operacion logistica: programacion de salidas, cancelaciones, reservas, recaudo de pagos, guias, clientes y reportes operativos |
+| `enc_cocora` | `Encargado123*` | ENCARGADO_PRESTADOR | Gestion exclusiva de su prestador (Valle de Cocora Expeditions, ID 14): salidas, planes y reservas de sus tours |
 
 ### Clientes / Viajeros (tipo de ingreso: CLIENTE)
 
-| Correo | Contrasena | Rol | Permisos |
-|---|---|---|---|
-| `cliente@correo.com` | `Cliente123*` | CLIENTE | Consultar tours, salidas disponibles, mis reservas, mis pagos, mi perfil, notificaciones |
-| `camila.torres@correo.com` | `Cliente123*` | CLIENTE | Mismos permisos de cliente |
-| `carlos.ramirez@correo.com` | `Cliente123*` | CLIENTE | Mismos permisos de cliente |
+Todos los clientes registrados con perfil activo utilizan la contrasena: `Cliente123*`
 
-## Funcionalidades Implementadas
+| Correo | Rol | Datos de Perfil |
+|---|---|---|
+| `alejandro.gomez@gmail.com` | CLIENTE | C.C. 1094928172, Español, WhatsApp preferido |
+| `camila.torres@hotmail.com` | CLIENTE | C.C. 1094883921, Español, Correo preferido |
+| `emily.johnson@hotmail.com` | CLIENTE | Pasaporte PA-9821734, Inglés, Correo preferido |
+| `carlos.ramirez@yahoo.com` | CLIENTE | C.C. 1094112233, Español, SMS preferido |
 
-### Modulos Completos
+## Modulos y Funcionalidades Implementadas
 
 | Modulo | Descripcion |
 |---|---|
-| Autenticacion | Login de personal interno y clientes, registro de clientes, JWT, guardias de ruta por rol |
-| Tours | CRUD de tours con categoria, dificultad, precio, prestador operador |
-| Salidas de Tour | Programacion de salidas con guia, idioma, cupo, fecha/hora; cancelacion |
-| Reservas | Creacion con participantes (RN06), calculo automatico (RN01), cancelacion con politica (RN05) |
-| Pagos | Registro de pagos parciales, multiples metodos, historial de transacciones |
-| Prestadores | CRUD de prestadores turisticos con RNT, municipio, tipo |
-| Planes | CRUD de planes de servicio (basico, estandar, premium, todo incluido) |
-| Guias | CRUD de guias turisticos con idiomas certificados |
-| Clientes | Directorio de clientes (admin/operador), perfil de preferencias |
-| Usuarios | Gestion de usuarios internos del sistema (solo admin) |
-| Notificaciones | Sistema de notificaciones por canal preferido |
-| Reportes | Reporte R5: guias con mas salidas; indice de reportes |
-| Dashboard | Panel principal con metricas segun rol |
+| Autenticacion | Login diferenciado por rol, emision de JWT, almacenamiento en sessionStorage, guards `auth.guard` y `rol.guard` en todas las rutas |
+| Tours | CRUD de tours con categoria, dificultad (`BAJA`, `MEDIA`, `ALTA`), duracion, edad minima y prestador de guianza |
+| Salidas de Tour | Programacion de salidas con control de cupos, asignacion de guia e idioma, validacion de solapamiento de horarios (RN04) y cancelacion con reembolso (D05/RF25) |
+| Reservas | Registro de reservas con participantes y edades (RN06/RN14), calculo automatico de total (D17), politica de cancelacion (RN08) y cambio de estados |
+| Pagos | Abonos y pagos totales con validacion de saldo, soporte de metodos en linea (tarjetas, PSE) con referencia y reembolsos controlados (D10) |
+| Prestadores | Registro y actualizacion de prestadores turisticos, validacion de RNT, municipio y tipo de prestador |
+| Planes | CRUD de planes turisticos con validacion de fechas de vigencia y prestador activo |
+| Guias | Registro de guias acreditados con vinculacion de idiomas certificados (`guia_idioma`) |
+| Clientes | Directorio para administracion y gestion de perfil y canal preferido para clientes |
+| Notificaciones | Bandeja de notificaciones y recordatorios automaticos segun canal preferido |
+| Reportes (R1 a R10) | Los 10 reportes analiticos requeridos con consultas SQL nativas (`JdbcTemplate`), filtros por fecha y exportacion en PDF |
+| Plantillas PDF | 5 plantillas oficiales: Comprobante de Reserva (Voucher), Recibo de Pago, Factura Oficial, Autorizacion para Menores de Edad y Tratamiento de Datos Personales |
 
-### Reglas de Negocio Implementadas
+## Reglas de Negocio Clave
 
-| Regla | Descripcion |
-|---|---|
-| RN01 | Calculo automatico: valorTotal = precioPersona x cantidadParticipantes |
-| RN05 | Politica de cancelacion con reembolsos segun dias de anticipacion |
-| RN06 | Si hay menores de 18, debe haber al menos un adulto responsable |
-| RN13 | Encargado de prestador requiere prestador asignado |
-
-### Control de Acceso por Rol
-
-| Funcionalidad | Admin | Operador | Encargado | Cliente |
-|---|---|---|---|---|
-| Panel Principal | Si | Si | Si | Si |
-| Catalogo de Tours | Si (CRUD) | Si (CRUD) | Si (CRUD) | Si (solo lectura) |
-| Salidas de Tour | Si (CRUD) | Si (CRUD) | Si (CRUD) | Si (solo lectura) |
-| Reservas | Si (todas) | Si (todas) | Si (todas) | Si (solo propias) |
-| Pagos | Si (todos) | Si (todos) | Si (todos) | Si (solo propios) |
-| Prestadores | Si (CRUD) | No | Si (CRUD) | No |
-| Planes | Si (CRUD) | No | Si (CRUD) | No |
-| Guias | Si (CRUD) | Si (CRUD) | Si (CRUD) | No |
-| Directorio Clientes | Si | Si | No | No |
-| Usuarios Internos | Si (CRUD) | No | No | No |
-| Reportes | Si | Si | Si | No |
-| Mi Perfil | No | No | No | Si |
-
-## Variables de Entorno
-
-| Variable | Descripcion | Valor por defecto |
-|---|---|---|
-| `SPRING_DATASOURCE_URL` | URL JDBC de MySQL | jdbc:mysql://localhost:3307/quindiostay... |
-| `SPRING_DATASOURCE_USERNAME` | Usuario MySQL | root |
-| `SPRING_DATASOURCE_PASSWORD` | Contrasena MySQL | santiago123 |
-| `JWT_SECRET` | Secreto para firma JWT (>=32 caracteres) | Valor de desarrollo incluido |
-| `JWT_EXPIRACION` | Minutos de vida del token | 120 |
-| `CORS_ORIGENES` | Origenes CORS permitidos | http://localhost:4200 |
+- **RN01 / D17**: Calculo automatico: `valor_total = numParticipantes * precio_persona`.
+- **RN02**: El plan seleccionado debe estar activo y la salida debe estar dentro de la vigencia del plan.
+- **RN04**: Validacion real de horario: un guia no puede tener dos salidas que se solapen segun la duracion del tour (`inicioA < finB AND inicioB < finA`).
+- **RN06 / RN14**: Si viajan menores de 18 anos, es obligatorio al menos un adulto acompanante en la misma reserva.
+- **RN07**: Una reserva pasa a `CONFIRMADA` unicamente cuando la suma de pagos exitosos cubre el 100% del valor total.
+- **RN08**: Cancelacion de reserva con mas de 5 dias de anticipacion reembolsa el 80%; con 5 dias o menos reembolsa el 0%.
+- **RN09**: Una reserva solo pasa a `COMPLETADA` si previamente estuvo `CONFIRMADA` y su salida esta `REALIZADA`.
+- **RN12**: Solo prestadores de tipo `GUIANZA` y en estado `ACTIVO` pueden publicar tours turisticos.
+- **D05 / RF25**: Si el operador cancela una salida, todas sus reservas activas pasan a `CANCELADA` y se les reembolsa el 100% de lo pagado.
+- **D06**: Estados `REALIZADA` y `CANCELADA` son terminales y no pueden modificarse. Solo se marca `REALIZADA` si la fecha no es futura.
+- **D10**: Un pago solo se reembolsa si la reserva esta cancelada, y el monto reembolsado no puede exceder lo pagado disponible.
+- **D16**: Reservas por canales virtuales (`WEB`, `APP_MOVIL`) exigen que el cliente cuente con perfil registrado.
 
 ## Decisiones Tecnicas
 
-1. **Base de datos MySQL**: Exclusivamente MySQL 8.0. No se usa H2 ni base de datos en memoria.
-2. **Naming strategy**: `CamelCaseToUnderscoresNamingStrategy` de Hibernate para snake_case automatico.
-3. **JWT**: Firma HS256. Token almacenado en `sessionStorage` del navegador.
-4. **Mapper manual**: Se usa mapper estatico manual en vez de MapStruct.
-5. **Paginacion**: `PaginaResponse<T>` como wrapper de `Page<T>` de Spring Data.
-6. **Proxy**: El frontend usa `proxy.conf.json` para redirigir `/api` al backend en desarrollo.
-7. **SCSS puro**: Sin bibliotecas de componentes externos (sin Bootstrap, sin Angular Material).
-8. **Standalone Components**: Angular 19 con componentes standalone, sin NgModules.
+1. **Cero H2**: Dependencias y archivos en memoria completamente eliminados. La aplicacion valida el esquema directamente contra MySQL 8.0 (`ddl-auto: validate`).
+2. **Consultas Nativas**: Todos los 10 reportes de `ReporteService` ejecutan sentencias SQL puras con parametros enlazados en lugar de filtrado en memoria.
+3. **Control de Acceso Riguroso**: Roles delimitados en backend (`@PreAuthorize`, `SecurityConfig`) y frontend (`rol.guard.ts`, sidebar reactivo).
+4. **Diseño Visual Taste Standard**: Paleta forest green cálida, sin emojis en la interfaz, modales autoajustables a pantalla y estilos consistentes.
 
-## Pruebas
-
-```bash
-# Backend
-cd backend
-.\mvnw.cmd test
-
-# Frontend
-cd frontend
-npm test
-```
-
-## Equipo
-
+---
 Universidad del Quindio -- Bases de Datos I, 2026-2

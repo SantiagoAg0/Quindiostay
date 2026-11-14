@@ -14,4 +14,7 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long> {
     List<Reserva> findByPrestadorId(@Param("idPrestador") Long idPrestador);
 
     long countByEstado(EstadoReserva estado);
+
+    @Query("SELECT rt.reserva FROM ReservaTour rt WHERE rt.salida.idSalida = :idSalida")
+    List<Reserva> findBySalidaId(@Param("idSalida") Long idSalida);
 }

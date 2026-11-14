@@ -100,8 +100,15 @@ public class ReporteController {
 
     @GetMapping("/{codigo}/pdf")
     @Operation(summary = "Exportar reporte a PDF oficial con OpenPDF")
-    public ResponseEntity<byte[]> exportarPdf(@PathVariable String codigo) {
-        byte[] pdfBytes = reporteService.exportarPdf(codigo);
+    public ResponseEntity<byte[]> exportarPdf(
+            @PathVariable String codigo,
+            @RequestParam(required = false) Dificultad dificultad,
+            @RequestParam(required = false) BigDecimal precioMax,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta,
+            @RequestParam(required = false) Integer minimo
+    ) {
+        byte[] pdfBytes = reporteService.exportarPdf(codigo, dificultad, precioMax, desde, hasta, minimo);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"reporte_" + codigo.toLowerCase() + ".pdf\"")
                 .contentType(MediaType.APPLICATION_PDF)

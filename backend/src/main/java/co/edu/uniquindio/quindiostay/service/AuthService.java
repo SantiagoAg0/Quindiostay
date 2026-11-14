@@ -110,7 +110,7 @@ public class AuthService {
         var perfil = new co.edu.uniquindio.quindiostay.domain.entity.nucleo.PerfilCliente();
         perfil.setCliente(cliente);
         perfil.setContrasenaCifrada(passwordEncoder.encode(request.contrasena()));
-        perfil.setIdiomaPreferido(request.idiomaPreferido() != null ? request.idiomaPreferido() : co.edu.uniquindio.quindiostay.domain.enums.IdiomaPreferido.ESPANOL);
+        perfil.setIdiomaPreferido(request.idiomaPreferido() != null ? request.idiomaPreferido() : co.edu.uniquindio.quindiostay.domain.enums.IdiomaPreferido.ESPAÑOL);
         perfil.setCanalPreferido(request.canalPreferido() != null ? request.canalPreferido() : co.edu.uniquindio.quindiostay.domain.enums.CanalPreferido.CORREO);
         perfil.setAnticipacionDias(request.anticipacionDias() != null ? request.anticipacionDias() : (short) 3);
         perfil.setAceptaPromociones(request.aceptaPromociones() != null ? request.aceptaPromociones() : co.edu.uniquindio.quindiostay.domain.enums.AceptaPromociones.SI);

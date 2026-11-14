@@ -47,7 +47,7 @@ import { IconComponent } from '../../shared/icon/icon.component';
           <select class="filter-select" [value]="filtroDificultad" (change)="onDificultadChange($event)">
             <option value="">Todas las dificultades</option>
             <option value="BAJA">Baja</option>
-            <option value="MODERADA">Moderada</option>
+            <option value="MEDIA">Media</option>
             <option value="ALTA">Alta</option>
           </select>
         </div>
@@ -146,7 +146,7 @@ import { IconComponent } from '../../shared/icon/icon.component';
                 <label class="form-label">Dificultad *</label>
                 <select class="form-select" formControlName="dificultad">
                   <option value="BAJA">Baja</option>
-                  <option value="MODERADA">Moderada</option>
+                  <option value="MEDIA">Media</option>
                   <option value="ALTA">Alta</option>
                 </select>
               </div>
@@ -168,6 +168,7 @@ import { IconComponent } from '../../shared/icon/icon.component';
               <div class="form-group">
                 <label class="form-label">Categoría *</label>
                 <select class="form-select" formControlName="idCategoria">
+                  <option [ngValue]="null" disabled>Selecciona una categoría</option>
                   <option *ngFor="let c of categorias" [ngValue]="c.idCategoria">{{ c.nombre }}</option>
                 </select>
               </div>
@@ -175,7 +176,10 @@ import { IconComponent } from '../../shared/icon/icon.component';
               <div class="form-group">
                 <label class="form-label">Prestador Operador *</label>
                 <select class="form-select" formControlName="idPrestador">
-                  <option *ngFor="let p of prestadores" [ngValue]="p.idPrestador">{{ p.nombreComercial }}</option>
+                  <option [ngValue]="null" disabled>Selecciona un prestador</option>
+                  <option *ngFor="let p of prestadores" [ngValue]="p.idPrestador">
+                    {{ p.nombreComercial }} ({{ p.tipoPrestadorNombre || 'Prestador' }})
+                  </option>
                 </select>
               </div>
             </div>
@@ -322,7 +326,7 @@ import { IconComponent } from '../../shared/icon/icon.component';
           border-radius: 999px;
 
           &.diff-baja { background: #ECFDF5; color: #047857; }
-          &.diff-moderada { background: #FEF3C7; color: #B45309; }
+          &.diff-media { background: #FEF3C7; color: #B45309; }
           &.diff-alta { background: #FEE2E2; color: #B91C1C; }
         }
       }
@@ -523,7 +527,7 @@ export class ToursListaComponent implements OnInit {
     nombre: ['', Validators.required],
     descripcion: [''],
     duracionHoras: [3.0, [Validators.required, Validators.min(0.5)]],
-    dificultad: ['MODERADA' as Dificultad, Validators.required],
+    dificultad: ['MEDIA' as Dificultad, Validators.required],
     edadMinima: [8, [Validators.required, Validators.min(0)]],
     precioPersona: [85000, [Validators.required, Validators.min(1)]],
     idCategoria: [1, Validators.required],
@@ -545,11 +549,22 @@ export class ToursListaComponent implements OnInit {
     });
 
     this.toursService.listarCategorias().subscribe({
-      next: (cats) => { this.categorias = cats; }
+      next: (cats) => {
+        this.categorias = cats || [];
+        if (this.categorias.length && !this.tourForm.get('idCategoria')?.value) {
+          this.tourForm.patchValue({ idCategoria: this.categorias[0].idCategoria });
+        }
+      }
     });
 
     this.prestadoresService.listar().subscribe({
-      next: (prests) => { this.prestadores = prests; }
+      next: (prests) => {
+        // Filtrar prestadores de guianza o activos para el dropdown
+        this.prestadores = prests || [];
+        if (this.prestadores.length && !this.tourForm.get('idPrestador')?.value) {
+          this.tourForm.patchValue({ idPrestador: this.prestadores[0].idPrestador });
+        }
+      }
     });
   }
 
@@ -574,11 +589,11 @@ export class ToursListaComponent implements OnInit {
     this.editandoId = null;
     this.tourForm.reset({
       duracionHoras: 3.0,
-      dificultad: 'MODERADA',
+      dificultad: 'MEDIA',
       edadMinima: 8,
       precioPersona: 85000,
-      idCategoria: this.categorias[0]?.idCategoria || 1,
-      idPrestador: this.prestadores[0]?.idPrestador || 1
+      idCategoria: this.categorias[0]?.idCategoria || null,
+      idPrestador: this.prestadores[0]?.idPrestador || null
     });
     this.mostrarModal = true;
   }

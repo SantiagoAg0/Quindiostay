@@ -175,10 +175,10 @@ import { IconComponent } from '../../../shared/icon/icon.component';
             <div class="form-group">
               <label class="form-label">Tipo de Documento *</label>
               <select class="form-select" formControlName="tipoDocumento">
-                <option value="CEDULA_CIUDADANIA">Cédula de Ciudadanía</option>
+                <option value="CC">Cédula de Ciudadanía (CC)</option>
+                <option value="CE">Cédula de Extranjería (CE)</option>
                 <option value="PASAPORTE">Pasaporte</option>
-                <option value="CEDULA_EXTRANJERIA">Cédula de Extranjería</option>
-                <option value="TARJETA_IDENTIDAD">Tarjeta de Identidad</option>
+                <option value="TI">Tarjeta de Identidad (TI)</option>
               </select>
             </div>
 
@@ -218,9 +218,8 @@ import { IconComponent } from '../../../shared/icon/icon.component';
             <div class="form-group">
               <label class="form-label">Idioma Preferido</label>
               <select class="form-select" formControlName="idiomaPreferido">
-                <option value="ESPANOL">Español</option>
+                <option value="ESPAÑOL">Español</option>
                 <option value="INGLES">Inglés</option>
-                <option value="FRANCES">Francés</option>
               </select>
             </div>
 
@@ -769,13 +768,13 @@ export class LoginComponent {
   registroForm = this.fb.group({
     nombres: ['', Validators.required],
     apellidos: ['', Validators.required],
-    tipoDocumento: ['CEDULA_CIUDADANIA', Validators.required],
+    tipoDocumento: ['CC', Validators.required],
     numeroDocumento: ['', Validators.required],
     correo: ['', [Validators.required, Validators.email]],
     telefono: [''],
     ciudadOrigen: [''],
     contrasena: ['', [Validators.required, Validators.minLength(6)]],
-    idiomaPreferido: ['ESPANOL'],
+    idiomaPreferido: ['ESPAÑOL'],
     canalPreferido: ['CORREO'],
     anticipacionDias: [3],
     aceptaPromocionesBool: [true]
@@ -832,8 +831,8 @@ export class LoginComponent {
   cerrarModalRegistro(): void {
     this.mostrarRegistroModal = false;
     this.registroForm.reset({
-      tipoDocumento: 'CEDULA_CIUDADANIA',
-      idiomaPreferido: 'ESPANOL',
+      tipoDocumento: 'CC',
+      idiomaPreferido: 'ESPAÑOL',
       canalPreferido: 'CORREO',
       anticipacionDias: 3,
       aceptaPromocionesBool: true
@@ -856,7 +855,7 @@ export class LoginComponent {
       telefono: v.telefono || undefined,
       ciudadOrigen: v.ciudadOrigen || undefined,
       contrasena: v.contrasena!,
-      idiomaPreferido: v.idiomaPreferido || 'ESPANOL',
+      idiomaPreferido: v.idiomaPreferido || 'ESPAÑOL',
       canalPreferido: v.canalPreferido || 'CORREO',
       anticipacionDias: v.anticipacionDias || 3,
       aceptaPromociones: v.aceptaPromocionesBool ? 'SI' : 'NO'

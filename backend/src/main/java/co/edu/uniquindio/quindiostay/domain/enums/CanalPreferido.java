@@ -5,7 +5,6 @@ package co.edu.uniquindio.quindiostay.domain.enums;
  */
 public enum CanalPreferido {
     CORREO,
-    CORREO_ELECTRONICO,
     SMS,
     WHATSAPP
 }

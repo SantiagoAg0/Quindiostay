@@ -1,4 +1,4 @@
-export type Dificultad = 'BAJA' | 'MODERADA' | 'ALTA';
+export type Dificultad = 'BAJA' | 'MEDIA' | 'ALTA';
 
 export interface TourResumen {
   idTour: number;

@@ -10,13 +10,14 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/reservas")
 @RequiredArgsConstructor
-@Tag(name = "Reservas", description = "Gestión de reservas de tours y participantes")
+@Tag(name = "Reservas", description = "Gestion de reservas de tours y participantes")
 public class ReservaController {
 
     private final ReservaService reservaService;
@@ -40,14 +41,15 @@ public class ReservaController {
     }
 
     @PutMapping("/{id}/estado")
-    @Operation(summary = "Cambiar estado de la reserva (PENDIENTE, CONFIRMADA, COMPLETADA)")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR_PLATAFORMA', 'OPERADOR', 'ENCARGADO_PRESTADOR')")
+    @Operation(summary = "Cambiar estado de la reserva (solo personal interno)")
     public ResponseEntity<ReservaDetalleDto> cambiarEstado(@PathVariable Long id, @RequestParam EstadoReserva nuevoEstado) {
         return ResponseEntity.ok(reservaService.cambiarEstado(id, nuevoEstado));
     }
 
     @PostMapping("/{id}/cancelar")
-    @Operation(summary = "Cancelar reserva y calcular reembolso según RN08")
-    public ResponseEntity<ReservaDetalleDto> cancelar(@PathVariable Long id, @RequestParam(required = false, defaultValue = "Cancelación solicitada") String motivo) {
+    @Operation(summary = "Cancelar reserva y calcular reembolso segun RN08")
+    public ResponseEntity<ReservaDetalleDto> cancelar(@PathVariable Long id, @RequestParam(required = false, defaultValue = "Cancelacion solicitada") String motivo) {
         return ResponseEntity.ok(reservaService.cancelarReserva(id, motivo));
     }
 }

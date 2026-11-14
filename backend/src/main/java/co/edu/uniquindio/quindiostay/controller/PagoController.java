@@ -10,13 +10,14 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/pagos")
 @RequiredArgsConstructor
-@Tag(name = "Pagos", description = "Gestión de pagos y reembolsos")
+@Tag(name = "Pagos", description = "Gestion de pagos y reembolsos")
 public class PagoController {
 
     private final PagoService pagoService;
@@ -31,13 +32,15 @@ public class PagoController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR_PLATAFORMA', 'OPERADOR', 'ENCARGADO_PRESTADOR', 'CLIENTE')")
     @Operation(summary = "Registrar un abono o pago completo para una reserva")
     public ResponseEntity<PagoDetalleDto> registrar(@Valid @RequestBody CrearPagoRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(pagoService.registrarPago(request));
     }
 
     @PostMapping("/{id}/reembolsar")
-    @Operation(summary = "Procesar reembolso de un pago (si la reserva está cancelada)")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR_PLATAFORMA', 'OPERADOR')")
+    @Operation(summary = "Procesar reembolso de un pago (si la reserva esta cancelada)")
     public ResponseEntity<PagoDetalleDto> reembolsar(@PathVariable Long id) {
         return ResponseEntity.ok(pagoService.reembolsar(id));
     }

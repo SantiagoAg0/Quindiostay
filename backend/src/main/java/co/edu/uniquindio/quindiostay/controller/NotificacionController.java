@@ -9,13 +9,14 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/notificaciones")
 @RequiredArgsConstructor
-@Tag(name = "Notificaciones", description = "Gestión e historial de notificaciones y recordatorios")
+@Tag(name = "Notificaciones", description = "Gestion e historial de notificaciones y recordatorios")
 public class NotificacionController {
 
     private final NotificacionService notificacionService;
@@ -27,13 +28,14 @@ public class NotificacionController {
     }
 
     @PostMapping
-    @Operation(summary = "Crear/programar nueva notificación")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR_PLATAFORMA', 'OPERADOR', 'ENCARGADO_PRESTADOR')")
+    @Operation(summary = "Crear/programar nueva notificacion")
     public ResponseEntity<NotificacionDto> crear(@Valid @RequestBody CrearNotificacionRequest req) {
         return ResponseEntity.status(HttpStatus.CREATED).body(notificacionService.crear(req));
     }
 
     @PutMapping("/{id}/leida")
-    @Operation(summary = "Marcar notificación como leída")
+    @Operation(summary = "Marcar notificacion como leida")
     public ResponseEntity<NotificacionDto> marcarLeida(@PathVariable Long id) {
         return ResponseEntity.ok(notificacionService.marcarLeida(id));
     }

@@ -64,17 +64,15 @@ import { TablaVaciaComponent } from '../../shared/tabla-vacia/tabla-vacia.compon
               <div class="form-group">
                 <label class="form-label">Idioma de Preferencia</label>
                 <select formControlName="idiomaPreferido" class="form-control">
-                  <option value="ESPANOL">Español</option>
+                  <option value="ESPAÑOL">Español</option>
                   <option value="INGLES">Inglés (English)</option>
-                  <option value="FRANCES">Francés (Français)</option>
-                  <option value="ALEMAN">Alemán (Deutsch)</option>
                 </select>
               </div>
 
               <div class="form-group">
                 <label class="form-label">Canal Preferido de Notificación</label>
                 <select formControlName="canalPreferido" class="form-control">
-                  <option value="EMAIL">Correo Electrónico</option>
+                  <option value="CORREO">Correo Electrónico</option>
                   <option value="WHATSAPP">WhatsApp</option>
                   <option value="SMS">Mensaje SMS</option>
                 </select>
@@ -251,17 +249,15 @@ import { TablaVaciaComponent } from '../../shared/tabla-vacia/tabla-vacia.compon
               <div class="form-group">
                 <label class="form-label">Idioma</label>
                 <select formControlName="idiomaPreferido" class="form-control">
-                  <option value="ESPANOL">Español</option>
+                  <option value="ESPAÑOL">Español</option>
                   <option value="INGLES">Inglés</option>
-                  <option value="FRANCES">Francés</option>
-                  <option value="ALEMAN">Alemán</option>
                 </select>
               </div>
 
               <div class="form-group">
                 <label class="form-label">Canal Preferido</label>
                 <select formControlName="canalPreferido" class="form-control">
-                  <option value="EMAIL">Correo Electrónico</option>
+                  <option value="CORREO">Correo Electrónico</option>
                   <option value="WHATSAPP">WhatsApp</option>
                   <option value="SMS">SMS</option>
                 </select>
@@ -721,19 +717,19 @@ export class ClientesListaComponent implements OnInit {
   formPerfil = this.fb.group({
     telefono: [''],
     ciudadOrigen: [''],
-    idiomaPreferido: ['ESPANOL', [Validators.required]],
-    canalPreferido: ['EMAIL', [Validators.required]],
-    anticipacionDias: [1, [Validators.required]],
-    aceptaPromociones: ['S', [Validators.required]]
+    idiomaPreferido: ['ESPAÑOL', [Validators.required]],
+    canalPreferido: ['CORREO', [Validators.required]],
+    anticipacionDias: [3, [Validators.required]],
+    aceptaPromociones: ['SI', [Validators.required]]
   });
 
   formAdmin = this.fb.group({
     telefono: [''],
     ciudadOrigen: [''],
-    idiomaPreferido: ['ESPANOL', [Validators.required]],
-    canalPreferido: ['EMAIL', [Validators.required]],
-    anticipacionDias: [1, [Validators.required]],
-    aceptaPromociones: ['S', [Validators.required]]
+    idiomaPreferido: ['ESPAÑOL', [Validators.required]],
+    canalPreferido: ['CORREO', [Validators.required]],
+    anticipacionDias: [3, [Validators.required]],
+    aceptaPromociones: ['SI', [Validators.required]]
   });
 
   get esSoloCliente(): boolean {
@@ -756,10 +752,10 @@ export class ClientesListaComponent implements OnInit {
         this.formPerfil.patchValue({
           telefono: cli.telefono || '',
           ciudadOrigen: cli.ciudadOrigen || '',
-          idiomaPreferido: cli.idiomaPreferido || 'ESPANOL',
-          canalPreferido: cli.canalPreferido || 'EMAIL',
-          anticipacionDias: cli.anticipacionDias || 1,
-          aceptaPromociones: cli.aceptaPromociones || 'S'
+          idiomaPreferido: cli.idiomaPreferido || 'ESPAÑOL',
+          canalPreferido: cli.canalPreferido || 'CORREO',
+          anticipacionDias: cli.anticipacionDias || 3,
+          aceptaPromociones: cli.aceptaPromociones || 'SI'
         });
         this.cargando = false;
       },
@@ -844,10 +840,10 @@ export class ClientesListaComponent implements OnInit {
     this.formAdmin.patchValue({
       telefono: c.telefono || '',
       ciudadOrigen: c.ciudadOrigen || '',
-      idiomaPreferido: c.idiomaPreferido || 'ESPANOL',
-      canalPreferido: c.canalPreferido || 'EMAIL',
-      anticipacionDias: c.anticipacionDias || 1,
-      aceptaPromociones: c.aceptaPromociones || 'S'
+      idiomaPreferido: c.idiomaPreferido || 'ESPAÑOL',
+      canalPreferido: c.canalPreferido || 'CORREO',
+      anticipacionDias: c.anticipacionDias || 3,
+      aceptaPromociones: c.aceptaPromociones || 'SI'
     });
   }
 

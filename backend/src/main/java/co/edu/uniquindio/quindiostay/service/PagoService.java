@@ -37,14 +37,34 @@ public class PagoService {
         var auth = SecurityContextHolder.getContext().getAuthentication();
         List<Pago> pagos;
 
-        if (auth != null && auth.getPrincipal() instanceof UsuarioPrincipal principal && "CLIENTE".equalsIgnoreCase(principal.getRol())) {
-            // El cliente solo puede consultar sus propios pagos
-            pagos = pagoRepository.findByReservaClienteIdCliente(principal.getId());
-            if (idReservaFiltro != null) {
-                pagos = pagos.stream().filter(p -> p.getReserva().getIdReserva().equals(idReservaFiltro)).toList();
-            }
-            if (estadoFiltro != null) {
-                pagos = pagos.stream().filter(p -> p.getEstado() == estadoFiltro).toList();
+        if (auth != null && auth.getPrincipal() instanceof UsuarioPrincipal principal) {
+            if ("CLIENTE".equalsIgnoreCase(principal.getRol())) {
+                // El cliente solo puede consultar sus propios pagos
+                pagos = pagoRepository.findByReservaClienteIdCliente(principal.getId());
+                if (idReservaFiltro != null) {
+                    pagos = pagos.stream().filter(p -> p.getReserva().getIdReserva().equals(idReservaFiltro)).toList();
+                }
+                if (estadoFiltro != null) {
+                    pagos = pagos.stream().filter(p -> p.getEstado() == estadoFiltro).toList();
+                }
+            } else if ("ENCARGADO_PRESTADOR".equalsIgnoreCase(principal.getRol()) && principal.getIdPrestador() != null) {
+                // ENCARGADO_PRESTADOR ve solo pagos de reservas cuyo plan pertenece a su prestador
+                pagos = pagoRepository.findByPrestadorId(principal.getIdPrestador());
+                if (idReservaFiltro != null) {
+                    pagos = pagos.stream().filter(p -> p.getReserva().getIdReserva().equals(idReservaFiltro)).toList();
+                }
+                if (estadoFiltro != null) {
+                    pagos = pagos.stream().filter(p -> p.getEstado() == estadoFiltro).toList();
+                }
+            } else {
+                // ADMIN / OPERADOR: ven todo
+                if (idReservaFiltro != null) {
+                    pagos = pagoRepository.findByReservaIdReserva(idReservaFiltro);
+                } else if (estadoFiltro != null) {
+                    pagos = pagoRepository.findByEstado(estadoFiltro);
+                } else {
+                    pagos = pagoRepository.findAll();
+                }
             }
         } else if (idReservaFiltro != null) {
             pagos = pagoRepository.findByReservaIdReserva(idReservaFiltro);
@@ -64,6 +84,9 @@ public class PagoService {
         if (reserva.getEstado() == EstadoReserva.CANCELADA) {
             throw new ReglaNegocioException("No se pueden registrar pagos para una reserva CANCELADA");
         }
+        if (reserva.getEstado() == EstadoReserva.COMPLETADA) {
+            throw new ReglaNegocioException("No se pueden registrar pagos para una reserva COMPLETADA");
+        }
 
         BigDecimal yaPagado = pagoRepository.sumExitososPorReserva(reserva.getIdReserva());
         BigDecimal nuevoTotal = yaPagado.add(request.monto());
@@ -72,12 +95,16 @@ public class PagoService {
             throw new ReglaNegocioException("El monto ($" + request.monto() + ") excede el saldo pendiente ($" + (reserva.getValorTotal().subtract(yaPagado)) + ")");
         }
 
-        // RN09: Pagos en línea exigen referencia de pasarela (generamos una simulada si no viene)
+        // Generar referencia para pagos en linea si no viene
         String ref = request.referenciaTransaccion();
         if (request.metodo() == MetodoPago.TARJETA_CREDITO || request.metodo() == MetodoPago.TARJETA_DEBITO || request.metodo() == MetodoPago.PSE) {
             if (ref == null || ref.isBlank()) {
                 ref = "TX-" + request.metodo().name().substring(0, 3) + "-" + System.currentTimeMillis() + "-" + UUID.randomUUID().toString().substring(0, 4).toUpperCase();
             }
+        }
+        // Para TRANSFERENCIA y EFECTIVO, referencia debe ser null (CHECK constraint ck_pago_referencia)
+        if (request.metodo() == MetodoPago.TRANSFERENCIA || request.metodo() == MetodoPago.EFECTIVO) {
+            ref = null;
         }
 
         Pago pago = new Pago();
@@ -94,11 +121,11 @@ public class PagoService {
             reserva.setEstado(EstadoReserva.CONFIRMADA);
             reservaRepository.save(reserva);
 
-            // Enviar notificación de confirmación de reserva
+            // Notificacion de confirmacion de reserva
             Notificacion notifConf = new Notificacion();
             notifConf.setTipo(TipoNotificacion.CONFIRMACION_RESERVA);
             notifConf.setCanal(CanalNotificacion.CORREO);
-            notifConf.setMensaje("¡Tu reserva #" + reserva.getIdReserva() + " ha sido PAGADA en su totalidad y está CONFIRMADA!");
+            notifConf.setMensaje("Tu reserva #" + reserva.getIdReserva() + " ha sido PAGADA en su totalidad y esta CONFIRMADA.");
             notifConf.setFechaProgramada(LocalDate.now());
             notifConf.setFechaEnvioReal(LocalDate.now());
             notifConf.setEstado(EstadoNotificacion.ENVIADA);
@@ -107,11 +134,11 @@ public class PagoService {
             notificacionRepository.save(notifConf);
         }
 
-        // Enviar notificación de confirmación de pago
+        // Notificacion de confirmacion de pago
         Notificacion notif = new Notificacion();
         notif.setTipo(TipoNotificacion.CONFIRMACION_PAGO);
         notif.setCanal(CanalNotificacion.CORREO);
-        notif.setMensaje("Hemos recibido tu pago de $" + request.monto() + " vía " + request.metodo() + " para la reserva #" + reserva.getIdReserva() + (ref != null ? " (Ref: " + ref + ")" : ""));
+        notif.setMensaje("Hemos recibido tu pago de $" + request.monto() + " via " + request.metodo() + " para la reserva #" + reserva.getIdReserva() + (ref != null ? " (Ref: " + ref + ")" : ""));
         notif.setFechaProgramada(LocalDate.now());
         notif.setFechaEnvioReal(LocalDate.now());
         notif.setEstado(EstadoNotificacion.ENVIADA);
@@ -127,14 +154,34 @@ public class PagoService {
         Pago pago = pagoRepository.findById(idPago)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Pago", idPago));
 
-        // RN10: Un pago solo puede quedar REEMBOLSADO si su reserva está CANCELADA
+        // D10: Solo se reembolsa si la reserva esta CANCELADA
         if (pago.getReserva().getEstado() != EstadoReserva.CANCELADA) {
-            throw new ReglaNegocioException("RN10: Un pago solo puede ser reembolsado si la reserva se encuentra CANCELADA");
+            throw new ReglaNegocioException("D10: Un pago solo puede ser reembolsado si la reserva se encuentra CANCELADA");
         }
 
-        pago.setEstado(EstadoPago.REEMBOLSADO);
-        pago = pagoRepository.save(pago);
-        return convertirADto(pago);
+        if (pago.getEstado() == EstadoPago.REEMBOLSADO) {
+            throw new ReglaNegocioException("Este pago ya fue reembolsado");
+        }
+
+        // D10: El monto reembolsado no puede exceder lo pagado - ya reembolsado
+        BigDecimal totalPagado = pagoRepository.sumExitososPorReserva(pago.getReserva().getIdReserva());
+        BigDecimal yaReembolsado = pagoRepository.sumReembolsadosPorReserva(pago.getReserva().getIdReserva());
+        BigDecimal disponibleReembolso = totalPagado.subtract(yaReembolsado);
+
+        if (pago.getMonto().compareTo(disponibleReembolso) > 0) {
+            throw new ReglaNegocioException("D10: El monto a reembolsar ($" + pago.getMonto() + ") excede el saldo disponible para reembolso ($" + disponibleReembolso + ")");
+        }
+
+        // Crear un nuevo registro de pago REEMBOLSADO en lugar de mutar el existente
+        Pago reembolso = new Pago();
+        reembolso.setFechaPago(LocalDateTime.now());
+        reembolso.setMonto(pago.getMonto());
+        reembolso.setMetodo(MetodoPago.TRANSFERENCIA);
+        reembolso.setEstado(EstadoPago.REEMBOLSADO);
+        reembolso.setReserva(pago.getReserva());
+        reembolso = pagoRepository.save(reembolso);
+
+        return convertirADto(reembolso);
     }
 
     private PagoDetalleDto convertirADto(Pago p) {
