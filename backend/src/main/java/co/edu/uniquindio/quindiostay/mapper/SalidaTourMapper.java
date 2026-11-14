@@ -24,7 +24,9 @@ public final class SalidaTourMapper {
                 tour.getNombre(),
                 tour.getDuracionHoras(),
                 tour.getDificultad(),
-                tour.getPrecioPersona()
+                tour.getPrecioPersona(),
+                tour.getPrestador() != null ? tour.getPrestador().getIdPrestador() : null,
+                tour.getPrestador() != null ? tour.getPrestador().getNombreComercial() : null
         ) : null;
 
         GuiaResumen guiaResumen = guia != null ? new GuiaResumen(

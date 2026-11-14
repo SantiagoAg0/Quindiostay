@@ -74,7 +74,15 @@ export class ReportesService {
     return this.http.get<R10ClienteAltoGastoFila[]>(`${this.apiUrl}/clientes-alto-gasto`);
   }
 
-  descargarPdf(codigo: string): Observable<Blob> {
-    return this.http.get(`${this.apiUrl}/${codigo}/pdf`, { responseType: 'blob' });
+  descargarPdf(codigo: string, filtros?: Record<string, any>): Observable<Blob> {
+    let params = new HttpParams();
+    if (filtros) {
+      Object.keys(filtros).forEach(key => {
+        if (filtros[key] !== undefined && filtros[key] !== null && filtros[key] !== '') {
+          params = params.set(key, filtros[key].toString());
+        }
+      });
+    }
+    return this.http.get(`${this.apiUrl}/${codigo}/pdf`, { params, responseType: 'blob' });
   }
 }

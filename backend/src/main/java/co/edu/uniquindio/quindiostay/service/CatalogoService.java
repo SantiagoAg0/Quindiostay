@@ -24,7 +24,15 @@ public class CatalogoService {
 
     public List<TourResumen> listarTours() {
         return tourRepository.findAll().stream()
-                .map(t -> new TourResumen(t.getIdTour(), t.getNombre(), t.getDuracionHoras(), t.getDificultad(), t.getPrecioPersona()))
+                .map(t -> new TourResumen(
+                        t.getIdTour(),
+                        t.getNombre(),
+                        t.getDuracionHoras(),
+                        t.getDificultad(),
+                        t.getPrecioPersona(),
+                        t.getPrestador() != null ? t.getPrestador().getIdPrestador() : null,
+                        t.getPrestador() != null ? t.getPrestador().getNombreComercial() : null
+                ))
                 .toList();
     }
 

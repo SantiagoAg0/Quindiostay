@@ -71,16 +71,17 @@ public class AuthService {
             return new LoginResponse(token, "Bearer", usuario.getNombreUsuario(), usuario.getRol().getNombre().name(), idPrestador);
 
         } else if ("CLIENTE".equalsIgnoreCase(tipo)) {
+            String correoLimpio = iden.trim().toLowerCase();
             // Se busca por correo insensible a mayúsculas
-            var cliente = clienteRepository.findByCorreo(iden.toLowerCase())
-                    .or(() -> clienteRepository.findByCorreo(iden))
-                    .orElseThrow(() -> new BadCredentialsException("No existe ninguna cuenta de cliente registrada con el correo: " + iden));
+            var cliente = clienteRepository.findByCorreoIgnoreCase(correoLimpio)
+                    .or(() -> clienteRepository.findByCorreo(iden.trim()))
+                    .orElseThrow(() -> new BadCredentialsException("Usuario o contraseña incorrectos"));
 
             var perfil = perfilClienteRepository.findById(cliente.getIdCliente())
-                    .orElseThrow(() -> new BadCredentialsException("El cliente está registrado pero aún no ha creado su perfil con contraseña. Por favor regístrese en la opción 'Crear Cuenta'."));
+                    .orElseThrow(() -> new BadCredentialsException("Usuario o contraseña incorrectos"));
 
             if (!passwordEncoder.matches(clave, perfil.getContrasenaCifrada())) {
-                throw new BadCredentialsException("Contraseña incorrecta para el usuario: " + iden);
+                throw new BadCredentialsException("Usuario o contraseña incorrectos");
             }
 
             String nombreCompleto = cliente.getNombres() + " " + cliente.getApellidos();
@@ -103,52 +104,107 @@ public class AuthService {
 
     @Transactional
     public LoginResponse registrarCliente(RegistroClienteRequest request) {
-        String correoLimpio = request.correo().trim().toLowerCase();
-
-        // Validar formato de teléfono para que cumpla ck_cliente_telefono (^3[0-9]{9}$)
-        String telefono = request.telefono() != null ? request.telefono().replaceAll("\\D", "") : "";
-        if (telefono.isBlank()) {
-            telefono = "3001234567"; // Teléfono por defecto si no se ingresa
-        } else if (!telefono.matches("^3[0-9]{9}$")) {
-            if (telefono.length() == 10 && !telefono.startsWith("3")) {
-                telefono = "3" + telefono.substring(1);
-            } else if (telefono.length() < 10) {
-                telefono = ("3000000000" + telefono).substring(telefono.length());
-            } else {
-                telefono = telefono.substring(0, 10);
-            }
+        if (request.nombres() == null || request.nombres().isBlank()) {
+            throw new ReglaNegocioException("El campo nombres es obligatorio");
+        }
+        if (request.apellidos() == null || request.apellidos().isBlank()) {
+            throw new ReglaNegocioException("El campo apellidos es obligatorio");
+        }
+        if (request.tipoDocumento() == null) {
+            throw new ReglaNegocioException("El campo tipoDocumento es obligatorio");
+        }
+        if (request.numeroDocumento() == null || request.numeroDocumento().isBlank()) {
+            throw new ReglaNegocioException("El campo numeroDocumento es obligatorio");
+        }
+        if (request.correo() == null || request.correo().isBlank()) {
+            throw new ReglaNegocioException("El campo correo es obligatorio");
+        }
+        if (request.telefono() == null || request.telefono().isBlank()) {
+            throw new ReglaNegocioException("El campo telefono es obligatorio");
+        }
+        String telefono = request.telefono().replaceAll("\\D", "");
+        if (!telefono.matches("^3[0-9]{9}$")) {
+            throw new ReglaNegocioException("El teléfono debe iniciar con 3 y tener 10 dígitos numéricos");
+        }
+        if (request.fechaNacimiento() == null) {
+            throw new ReglaNegocioException("El campo fechaNacimiento es obligatorio");
+        }
+        if (request.fechaNacimiento().isAfter(LocalDate.now())) {
+            throw new ReglaNegocioException("La fecha de nacimiento no puede ser futura");
+        }
+        if (request.fechaNacimiento().isBefore(LocalDate.of(1900, 1, 1))) {
+            throw new ReglaNegocioException("La fecha de nacimiento debe ser a partir del año 1900");
+        }
+        if (request.ciudadOrigen() == null || request.ciudadOrigen().isBlank()) {
+            throw new ReglaNegocioException("El campo ciudadOrigen es obligatorio");
+        }
+        if (request.contrasena() == null || request.contrasena().isBlank() || request.contrasena().length() < 6) {
+            throw new ReglaNegocioException("La contraseña es obligatoria y debe tener al menos 6 caracteres");
+        }
+        if (request.idiomaPreferido() == null) {
+            throw new ReglaNegocioException("El campo idiomaPreferido es obligatorio");
+        }
+        if (request.canalPreferido() == null) {
+            throw new ReglaNegocioException("El campo canalPreferido es obligatorio");
+        }
+        if (request.anticipacionDias() == null) {
+            throw new ReglaNegocioException("El campo anticipacionDias es obligatorio");
+        }
+        if (request.aceptaPromociones() == null) {
+            throw new ReglaNegocioException("El campo aceptaPromociones es obligatorio");
         }
 
-        // Validar fecha de nacimiento por ck_cliente_nacimiento
-        LocalDate fechaNac = request.fechaNacimiento() != null ? request.fechaNacimiento() : LocalDate.of(1995, 1, 1);
-        String ciudad = (request.ciudadOrigen() != null && !request.ciudadOrigen().isBlank()) ? request.ciudadOrigen().trim() : "Armenia";
+        String correoLimpio = request.correo().trim().toLowerCase();
+        String docLimpio = request.numeroDocumento().trim();
 
         // Regla RN01 / Unificación: Si el cliente ya existía (p. ej. compra presencial) pero sin perfil:
-        Optional<Cliente> clienteExistentePorCorreo = clienteRepository.findByCorreo(correoLimpio);
-        Optional<Cliente> clienteExistentePorDoc = clienteRepository.findByTipoDocumentoAndNumeroDocumento(request.tipoDocumento(), request.numeroDocumento().trim());
+        Optional<Cliente> clienteExistentePorCorreo = clienteRepository.findByCorreoIgnoreCase(correoLimpio);
+        Optional<Cliente> clienteExistentePorDoc = clienteRepository.findByTipoDocumentoAndNumeroDocumento(request.tipoDocumento(), docLimpio);
+
+        // Mensaje genérico de duplicidad que no revela la existencia del correo
+        if (clienteExistentePorCorreo.isPresent() && perfilClienteRepository.existsById(clienteExistentePorCorreo.get().getIdCliente())) {
+            throw new ReglaNegocioException("No fue posible completar el registro. Si ya tiene una cuenta registrada, por favor inicie sesión.");
+        }
+        if (clienteExistentePorDoc.isPresent() && perfilClienteRepository.existsById(clienteExistentePorDoc.get().getIdCliente())) {
+            throw new ReglaNegocioException("No fue posible completar el registro. Si ya tiene una cuenta registrada, por favor inicie sesión.");
+        }
+
+        // Si existen dos clientes distintos de mostrador por correo y documento
+        if (clienteExistentePorCorreo.isPresent() && clienteExistentePorDoc.isPresent()
+                && !clienteExistentePorCorreo.get().getIdCliente().equals(clienteExistentePorDoc.get().getIdCliente())) {
+            throw new ReglaNegocioException("No fue posible completar el registro. Los datos ingresados corresponden a registros diferentes.");
+        }
 
         Cliente cliente;
         if (clienteExistentePorCorreo.isPresent()) {
             cliente = clienteExistentePorCorreo.get();
-            if (perfilClienteRepository.existsById(cliente.getIdCliente())) {
-                throw new ReglaNegocioException("Ya existe una cuenta activa con el correo: " + correoLimpio);
-            }
+            cliente.setNombres(request.nombres().trim());
+            cliente.setApellidos(request.apellidos().trim());
+            cliente.setTipoDocumento(request.tipoDocumento());
+            cliente.setNumeroDocumento(docLimpio);
+            cliente.setTelefono(telefono);
+            cliente.setFechaNacimiento(request.fechaNacimiento());
+            cliente.setCiudadOrigen(request.ciudadOrigen().trim());
+            cliente = clienteRepository.save(cliente);
         } else if (clienteExistentePorDoc.isPresent()) {
             cliente = clienteExistentePorDoc.get();
-            if (perfilClienteRepository.existsById(cliente.getIdCliente())) {
-                throw new ReglaNegocioException("Ya existe una cuenta activa registrada con el documento: " + request.tipoDocumento() + " " + request.numeroDocumento());
-            }
+            cliente.setNombres(request.nombres().trim());
+            cliente.setApellidos(request.apellidos().trim());
             cliente.setCorreo(correoLimpio);
+            cliente.setTelefono(telefono);
+            cliente.setFechaNacimiento(request.fechaNacimiento());
+            cliente.setCiudadOrigen(request.ciudadOrigen().trim());
+            cliente = clienteRepository.save(cliente);
         } else {
             cliente = new Cliente();
             cliente.setNombres(request.nombres().trim());
             cliente.setApellidos(request.apellidos().trim());
             cliente.setTipoDocumento(request.tipoDocumento());
-            cliente.setNumeroDocumento(request.numeroDocumento().trim());
+            cliente.setNumeroDocumento(docLimpio);
             cliente.setCorreo(correoLimpio);
             cliente.setTelefono(telefono);
-            cliente.setFechaNacimiento(fechaNac);
-            cliente.setCiudadOrigen(ciudad);
+            cliente.setFechaNacimiento(request.fechaNacimiento());
+            cliente.setCiudadOrigen(request.ciudadOrigen().trim());
             cliente = clienteRepository.save(cliente);
         }
 
@@ -156,10 +212,10 @@ public class AuthService {
         PerfilCliente perfil = new PerfilCliente();
         perfil.setCliente(cliente);
         perfil.setContrasenaCifrada(passwordEncoder.encode(request.contrasena()));
-        perfil.setIdiomaPreferido(request.idiomaPreferido() != null ? request.idiomaPreferido() : IdiomaPreferido.ESPAÑOL);
-        perfil.setCanalPreferido(request.canalPreferido() != null ? request.canalPreferido() : CanalPreferido.CORREO);
-        perfil.setAnticipacionDias(request.anticipacionDias() != null ? request.anticipacionDias() : (short) 3);
-        perfil.setAceptaPromociones(request.aceptaPromociones() != null ? request.aceptaPromociones() : AceptaPromociones.SI);
+        perfil.setIdiomaPreferido(request.idiomaPreferido());
+        perfil.setCanalPreferido(request.canalPreferido());
+        perfil.setAnticipacionDias(request.anticipacionDias());
+        perfil.setAceptaPromociones(request.aceptaPromociones());
         perfilClienteRepository.save(perfil);
 
         String nombreCompleto = cliente.getNombres() + " " + cliente.getApellidos();

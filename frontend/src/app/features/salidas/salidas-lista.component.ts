@@ -1,6 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { SalidasService } from './salidas.service';
 import { SalidaTour } from '../../core/models/salida-tour.model';
 import { TourResumen } from '../../core/models/tour.model';
@@ -18,6 +19,7 @@ import { AuthService } from '../../core/auth/auth.service';
   imports: [
     CommonModule,
     FormsModule,
+    RouterModule,
     PillEstadoComponent,
     BarraOcupacionComponent,
     TablaVaciaComponent,
@@ -99,7 +101,7 @@ import { AuthService } from '../../core/auth/auth.service';
                 <th>Idioma</th>
                 <th>Ocupación</th>
                 <th>Estado</th>
-                <th *ngIf="!authService.esCliente()" class="actions-col">Acciones</th>
+                <th class="actions-col">Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -113,6 +115,9 @@ import { AuthService } from '../../core/auth/auth.service';
                       {{ s.fecha }} ·
                       <app-icon name="clock" [size]="12"></app-icon>
                       {{ formatoHora(s.horaInicio) }} - {{ formatoHora(s.horaFin) }} ({{ s.tour.duracionHoras }}h)
+                    </span>
+                    <span class="tour-submeta" style="display: block; font-size: 0.8125rem; color: #047857; font-weight: 600; margin-top: 3px;">
+                      Operador: {{ s.tour.nombrePrestador || 'Prestador Oficial' }} · $ {{ s.tour.precioPersona | number }} / persona
                     </span>
                   </div>
                 </td>
@@ -150,6 +155,20 @@ import { AuthService } from '../../core/auth/auth.service';
                       <app-icon name="trash" [size]="15"></app-icon>
                     </button>
                   </div>
+                </td>
+                <td *ngIf="authService.esCliente()" class="actions-col">
+                  <a
+                    *ngIf="s.estado === 'PROGRAMADA' && (s.cupo - s.cuposOcupados) > 0"
+                    routerLink="/reservas"
+                    [queryParams]="{ salida: s.idSalida }"
+                    class="btn btn-sm btn-primary"
+                    style="padding: 6px 12px; font-size: 0.8125rem;">
+                    <app-icon name="ticket" [size]="14"></app-icon>
+                    <span>Reservar</span>
+                  </a>
+                  <span *ngIf="s.estado !== 'PROGRAMADA' || (s.cupo - s.cuposOcupados) <= 0" style="font-size: 0.8125rem; color: #94a3b8;">
+                    No disponible
+                  </span>
                 </td>
               </tr>
             </tbody>

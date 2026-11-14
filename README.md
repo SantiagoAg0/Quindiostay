@@ -1,159 +1,214 @@
-# QuindioStay -- Plataforma de Turismo del Quindio
+# QuindíoStay — Plataforma Integral de Turismo y Operación de Salidas
 
-> **Dominio 5: Tours y actividades locales**
-> Proyecto Final -- Bases de Datos I, Universidad del Quindio, 2026-2
+> **Dominio 5: Tours y Actividades Locales**  
+> Proyecto Final — Bases de Datos I, Universidad del Quindío, 2026-2  
+> Arquitectura Empresarial: Backend Spring Boot 3.3.5 (Java 21) · Frontend Angular 19 · MySQL 8.0
 
-## Descripcion del Proyecto
+---
 
-QuindioStay es una plataforma integral para la gestion de tours turisticos, guianza certificada y experiencias de ecoturismo en el departamento del Quindio, Colombia. Permite administrar prestadores de servicios turisticos, programar salidas de tour, gestionar reservas con poliza de participantes, procesar pagos parciales y en linea, generar reportes operativos y analiticos avanzados con consultas SQL nativas (`GROUP BY`, `HAVING`, subconsultas) y expedir comprobantes oficiales en PDF.
+## 1. Visión General del Proyecto
 
-## Stack Tecnologico
+**QuindíoStay** es una solución integral diseñada para la gestión, comercialización y control operativo de experiencias ecoturísticas, senderismo y guianza profesional certificada en los 12 municipios del departamento del Quindío, Colombia.
 
-| Componente | Tecnologia |
-|---|---|
-| Backend | Spring Boot 3.3.5 (Java 21, Maven) |
-| Base de Datos | MySQL 8.0 (puerto 3307) |
-| Frontend | Angular 19 (TypeScript, SCSS, Standalone Components) |
-| Autenticacion | JWT (HS256) |
-| Generacion PDF | OpenPDF / iText |
+La plataforma articula el ecosistema turístico regional integrando:
+- **Prestadores Turísticos Certificados**: Operadores y agencias con Registro Nacional de Turismo (RNT).
+- **Guías Profesionales Acreditados**: Asignación logística con validación estricta de idiomas certificados y disponibilidad horaria.
+- **Salidas Programadas y Control de Aforo**: Monitoreo de cupos en tiempo real, prevención de solapamientos horarios y políticas de cancelación automatizadas.
+- **Reservas y Pólizas de Asistencia**: Registro detallado de participantes con validación de minoría de edad y acompañamiento de adultos responsables (RN06/RN14).
+- **Pasarela de Cartera y Pagos**: Gestión de abonos, pagos virtuales (Tarjetas, PSE), liquidación de saldos y reembolsos trazables.
+- **Inteligencia de Negocios y Analítica SQL**: Módulo de 10 reportes analíticos de alta complejidad ejecutados directamente en el motor relacional mediante SQL nativo (`GROUP BY`, `HAVING`, tablas derivadas, subconsultas escalares).
+- **Emisión de Documentos Oficiales en PDF**: Generación en servidor con autenticación JWT de vouchers de reserva, recibos de caja, facturas, consentimientos informados y tratamiento de datos personales.
 
-## Requisitos Previos
+---
 
-| Herramienta | Version minima |
-|---|---|
-| JDK | 21 |
-| Node.js | 20+ |
-| npm | 9+ |
-| MySQL | 8.0 |
+## 2. Stack Tecnológico
 
-## Estructura del Proyecto
+| Capa | Tecnología | Versión | Descripción / Propósito |
+|---|---|---|---|
+| **Backend** | Spring Boot | 3.3.5 | API RESTful modular, Spring Data JPA, Spring Security, Validation |
+| **Lenguaje Backend** | Java (JDK) | 21 LTS | Código moderno con Records, Pattern Matching y Virtual Threads |
+| **Base de Datos** | MySQL Server | 8.0 (Puerto 3307) | Motor relacional InnoDB con restricciones declarativas `CHECK`, `UNIQUE`, `FK RESTRICT` (0 Triggers) |
+| **Frontend** | Angular | 19.0.0 | Arquitectura basada en Standalone Components, Signals, Reactive Forms y RxJS |
+| **Diseño y Estilos** | SCSS Modular | BEM / Tokens | Paleta orgánica institucional (Verde Bosque, Esmeralda, Menta y Glassmorphism) sin emojis |
+| **Seguridad** | JWT (JSON Web Tokens) | JJWT 0.12.6 | Firma criptográfica HMAC-SHA256, expiración de tokens, guards `auth.guard` y `rol.guard` |
+| **Generación PDF** | OpenPDF / iText | 1.3.39 | Renderizado dinámico de plantillas vectoriales y comprobantes formales |
+| **Documentación API** | OpenAPI 3.0 / Swagger | SpringDoc 2.6.0 | Catálogo interactivo de endpoints |
+
+---
+
+## 3. Requisitos del Sistema
+
+Para el despliegue y ejecución local se requiere contar con:
+- **Java Development Kit (JDK)**: Versión 21 o superior configurada en `JAVA_HOME`.
+- **Node.js**: Versión 20.x LTS o superior con gestor de paquetes `npm` 10+.
+- **MySQL Server**: Versión 8.0 (configurado en el puerto `3307` o según configuración local).
+- **Maven**: 3.9+ (o el wrapper `./mvnw` provisto).
+
+---
+
+## 4. Estructura del Repositorio
 
 ```
-quindiostay/
-├── README.md
-├── backend/             Spring Boot 3.3.5 (Java 21, Maven)
-├── frontend/            Angular 19 (TypeScript, SCSS)
-└── database/            Scripts SQL (01_esquema.sql, 02_datos.sql, 03_verificacion.sql, 04_reportes.sql)
+Quindiostay/
+├── backend/                      # API REST Spring Boot (Java 21)
+│   ├── src/main/java/           # Código fuente organizado por capas (domain, dto, repository, service, controller)
+│   ├── src/main/resources/      # application.yml y plantillas
+│   └── src/test/java/           # Suite de pruebas unitarias y de integración
+├── frontend/                     # Aplicación SPA Angular 19
+│   ├── src/app/core/            # Servicios transversales, autenticación JWT, modelos e interceptores
+│   ├── src/app/features/        # Módulos de negocio (tours, salidas, reservas, pagos, clientes, catálogos, reportes)
+│   ├── src/app/layout/          # Shell institucional, topbar y navegación lateral
+│   └── src/styles/              # Sistema de diseño, tokens, tipografía e iconografía SVG
+└── database/                     # Scripts SQL declarativos oficiales
+    ├── 01_esquema.sql           # DDL: Creación de tablas, claves primarias, foráneas y restricciones CHECK
+    ├── 02_datos.sql             # DML: Datos base y transaccionales realistas de prueba
+    ├── 03_verificacion.sql      # Scripts de verificación y auditoría de integridad
+    └── 04_reportes.sql          # Consultas analíticas SQL para los 10 reportes de negocio
 ```
 
-## Configuracion de Base de Datos (MySQL)
+---
 
-1. Crear la base de datos en MySQL (puerto 3307):
+## 5. Puesta en Marcha de la Base de Datos
+
+1. **Creación del Esquema en MySQL**:
    ```sql
    CREATE DATABASE quindiostay CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
    ```
 
-2. Ejecutar los scripts SQL de la carpeta `database/` en orden numerico:
-   - `01_esquema.sql`: Crea las 19 tablas relacionales con restricciones `CHECK`, llaves foraneas y valores por defecto.
-   - `02_datos.sql`: Inserta los datos realistas de prueba anclados en noviembre de 2026.
-   - `03_verificacion.sql`: Valida el conteo de registros y verifica 0 violaciones de reglas de negocio.
-   - `04_reportes.sql`: Consultas maestras para los 10 reportes analiticos.
+2. **Ejecución de Scripts en Orden Numérico Estricto**:
+   - `01_esquema.sql`: Crea las 19 tablas relacionales con restricciones `CHECK`, `UNIQUE` e integridad referencial `FK`.
+   - `02_datos.sql`: Carga el catálogo geográfico, operadores turísticos, guías acreditados, clientes y registros históricos.
+   - `03_verificacion.sql`: Valida que no existan inconsistencias ni violaciones de restricciones.
+   - `04_reportes.sql`: Contiene las consultas maestras que alimentan los reportes analíticos del sistema.
 
-3. Credenciales de conexion de MySQL para desarrollo:
-   - Host: `localhost`
-   - Puerto: `3307`
-   - Base de datos: `quindiostay`
-   - Usuario: `root`
-   - Contrasena: `santiago123`
+---
 
-## Arranque del Proyecto
+## 6. Configuración y Despliegue
 
-### Backend (puerto 8080)
+### 6.1 Backend (Spring Boot — Puerto 8080)
 
-En PowerShell (Windows):
+Configure las variables de entorno de su motor de base de datos antes de iniciar:
+
+**En Windows (PowerShell):**
 ```powershell
 cd backend
 $env:SPRING_DATASOURCE_URL = "jdbc:mysql://localhost:3307/quindiostay?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Bogota&characterEncoding=UTF-8"
-$env:SPRING_DATASOURCE_USERNAME = "root"
-$env:SPRING_DATASOURCE_PASSWORD = "santiago123"
-$env:SPRING_DATASOURCE_DRIVER_CLASS_NAME = "com.mysql.cj.jdbc.Driver"
+$env:SPRING_DATASOURCE_USERNAME = "<SU_USUARIO_MYSQL>"
+$env:SPRING_DATASOURCE_PASSWORD = "<SU_CONTRASENA_MYSQL>"
 .\mvnw.cmd spring-boot:run
 ```
 
-En Linux/macOS:
+**En Linux / macOS (Bash):**
 ```bash
 cd backend
 export SPRING_DATASOURCE_URL="jdbc:mysql://localhost:3307/quindiostay?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Bogota&characterEncoding=UTF-8"
-export SPRING_DATASOURCE_USERNAME="root"
-export SPRING_DATASOURCE_PASSWORD="santiago123"
+export SPRING_DATASOURCE_USERNAME="<SU_USUARIO_MYSQL>"
+export SPRING_DATASOURCE_PASSWORD="<SU_CONTRASENA_MYSQL>"
 ./mvnw spring-boot:run
 ```
 
-### Frontend (puerto 4200)
-
+**Ejecución de Pruebas Unitarias:**
 ```bash
-cd frontend
-npm install
-npm start
+cd backend
+./mvnw clean test
 ```
 
-## URLs del Proyecto
+### 6.2 Frontend (Angular 19 — Puerto 4200)
 
-| Recurso | URL |
-|---|---|
-| Aplicacion web | http://localhost:4200 |
-| API Base | http://localhost:8080/api |
-| Swagger UI | http://localhost:8080/swagger-ui.html |
+1. Instalar dependencias:
+   ```bash
+   cd frontend
+   npm install
+   ```
 
-## Credenciales de Prueba Oficiales
+2. Iniciar el servidor de desarrollo:
+   ```bash
+   npm start
+   ```
 
-### Personal Interno (tipo de ingreso: PERSONAL)
-
-| Usuario | Contrasena | Rol | Permisos y Alcance |
-|---|---|---|---|
-| `admin` | `Admin123*` | ADMINISTRADOR_PLATAFORMA | Acceso total: configuracion de plataforma, usuarios internos, catalogo de prestadores, tours, salidas, reservas, cartera, todos los reportes |
-| `operador` | `Operador123*` | OPERADOR | Operacion logistica: programacion de salidas, cancelaciones, reservas, recaudo de pagos, guias, clientes y reportes operativos |
-| `enc_cocora` | `Encargado123*` | ENCARGADO_PRESTADOR | Gestion exclusiva de su prestador (Valle de Cocora Expeditions, ID 14): salidas, planes y reservas de sus tours |
-
-### Clientes / Viajeros (tipo de ingreso: CLIENTE)
-
-Todos los clientes registrados con perfil activo utilizan la contrasena: `Cliente123*`
-
-| Correo | Rol | Datos de Perfil |
-|---|---|---|
-| `alejandro.gomez@gmail.com` | CLIENTE | C.C. 1094928172, Español, WhatsApp preferido |
-| `camila.torres@hotmail.com` | CLIENTE | C.C. 1094883921, Español, Correo preferido |
-| `emily.johnson@hotmail.com` | CLIENTE | Pasaporte PA-9821734, Inglés, Correo preferido |
-| `carlos.ramirez@yahoo.com` | CLIENTE | C.C. 1094112233, Español, SMS preferido |
-
-## Modulos y Funcionalidades Implementadas
-
-| Modulo | Descripcion |
-|---|---|
-| Autenticacion | Login diferenciado por rol, emision de JWT, almacenamiento en sessionStorage, guards `auth.guard` y `rol.guard` en todas las rutas |
-| Tours | CRUD de tours con categoria, dificultad (`BAJA`, `MEDIA`, `ALTA`), duracion, edad minima y prestador de guianza |
-| Salidas de Tour | Programacion de salidas con control de cupos, asignacion de guia e idioma, validacion de solapamiento de horarios (RN04) y cancelacion con reembolso (D05/RF25) |
-| Reservas | Registro de reservas con participantes y edades (RN06/RN14), calculo automatico de total (D17), politica de cancelacion (RN08) y cambio de estados |
-| Pagos | Abonos y pagos totales con validacion de saldo, soporte de metodos en linea (tarjetas, PSE) con referencia y reembolsos controlados (D10) |
-| Prestadores | Registro y actualizacion de prestadores turisticos, validacion de RNT, municipio y tipo de prestador |
-| Planes | CRUD de planes turisticos con validacion de fechas de vigencia y prestador activo |
-| Guias | Registro de guias acreditados con vinculacion de idiomas certificados (`guia_idioma`) |
-| Clientes | Directorio para administracion y gestion de perfil y canal preferido para clientes |
-| Notificaciones | Bandeja de notificaciones y recordatorios automaticos segun canal preferido |
-| Reportes (R1 a R10) | Los 10 reportes analiticos requeridos con consultas SQL nativas (`JdbcTemplate`), filtros por fecha y exportacion en PDF |
-| Plantillas PDF | 5 plantillas oficiales: Comprobante de Reserva (Voucher), Recibo de Pago, Factura Oficial, Autorizacion para Menores de Edad y Tratamiento de Datos Personales |
-
-## Reglas de Negocio Clave
-
-- **RN01 / D17**: Calculo automatico: `valor_total = numParticipantes * precio_persona`.
-- **RN02**: El plan seleccionado debe estar activo y la salida debe estar dentro de la vigencia del plan.
-- **RN04**: Validacion real de horario: un guia no puede tener dos salidas que se solapen segun la duracion del tour (`inicioA < finB AND inicioB < finA`).
-- **RN06 / RN14**: Si viajan menores de 18 anos, es obligatorio al menos un adulto acompanante en la misma reserva.
-- **RN07**: Una reserva pasa a `CONFIRMADA` unicamente cuando la suma de pagos exitosos cubre el 100% del valor total.
-- **RN08**: Cancelacion de reserva con mas de 5 dias de anticipacion reembolsa el 80%; con 5 dias o menos reembolsa el 0%.
-- **RN09**: Una reserva solo pasa a `COMPLETADA` si previamente estuvo `CONFIRMADA` y su salida esta `REALIZADA`.
-- **RN12**: Solo prestadores de tipo `GUIANZA` y en estado `ACTIVO` pueden publicar tours turisticos.
-- **D05 / RF25**: Si el operador cancela una salida, todas sus reservas activas pasan a `CANCELADA` y se les reembolsa el 100% de lo pagado.
-- **D06**: Estados `REALIZADA` y `CANCELADA` son terminales y no pueden modificarse. Solo se marca `REALIZADA` si la fecha no es futura.
-- **D10**: Un pago solo se reembolsa si la reserva esta cancelada, y el monto reembolsado no puede exceder lo pagado disponible.
-- **D16**: Reservas por canales virtuales (`WEB`, `APP_MOVIL`) exigen que el cliente cuente con perfil registrado.
-
-## Decisiones Tecnicas
-
-1. **Cero H2**: Dependencias y archivos en memoria completamente eliminados. La aplicacion valida el esquema directamente contra MySQL 8.0 (`ddl-auto: validate`).
-2. **Consultas Nativas**: Todos los 10 reportes de `ReporteService` ejecutan sentencias SQL puras con parametros enlazados en lugar de filtrado en memoria.
-3. **Control de Acceso Riguroso**: Roles delimitados en backend (`@PreAuthorize`, `SecurityConfig`) y frontend (`rol.guard.ts`, sidebar reactivo).
-4. **Diseño Visual Taste Standard**: Paleta forest green cálida, sin emojis en la interfaz, modales autoajustables a pantalla y estilos consistentes.
+3. Compilar para producción:
+   ```bash
+   npm run build
+   ```
 
 ---
-Universidad del Quindio -- Bases de Datos I, 2026-2
+
+## 7. Puntos de Entrada y Servicios
+
+| Componente | Dirección | Descripción |
+|---|---|---|
+| **Portal Web de la Aplicación** | `http://localhost:4200` | Interfaz de usuario interactiva |
+| **API RESTful** | `http://localhost:8080/api` | Endpoints del backend protegidos con JWT |
+| **Documentación Swagger UI** | `http://localhost:8080/swagger-ui.html` | Especificación OpenAPI 3.0 interactiva |
+| **Verificación de Salud** | `http://localhost:8080/api/health` | Estado del backend y conectividad |
+
+---
+
+## 8. Roles de Usuario y Modelo de Seguridad
+
+El sistema implementa un control de acceso basado en roles (RBAC) con tokens JWT y autorización en dos niveles (Spring Security `@PreAuthorize` en endpoints y Angular `rolGuard` en rutas):
+
+### 1. `ADMINISTRADOR_PLATAFORMA`
+- Control total sobre el sistema y configuración global.
+- CRUD completo de Catálogos Maestros: Municipios, Tipos de Prestador, Roles, Categorías de Tour e Idiomas.
+- Gestión de Usuarios Internos, auditoría de operadores y acceso a todos los reportes estratégicos.
+
+### 2. `OPERADOR`
+- Coordinación logística general de la operación turística en el Quindío.
+- Programación de salidas de tours, asignación de guías certificados e idiomas.
+- Alta de clientes de mostrador (RN01 presencial), creación de reservas, recaudo de pagos y cancelación de salidas con reembolso integral.
+
+### 3. `ENCARGADO_PRESTADOR`
+- Ámbito restringido a la entidad prestadora de servicios turísticos a la que pertenece.
+- Administración de los tours propios de su operador, planes comerciales asociados y consulta de ocupación de sus salidas.
+
+### 4. `CLIENTE`
+- Portal del viajero para consulta del catálogo de tours y salidas disponibles.
+- Reserva asistida (el operador y planes disponibles se ligan de manera automática a la salida elegida).
+- Consulta exclusiva de sus propias reservas, historial de pagos, comprobantes descargables en PDF y gestión de preferencias de notificación.
+
+> **Nota para Evaluadores y Pruebas**:  
+> Los usuarios y credenciales iniciales para pruebas en entornos de laboratorio provienen directamente del script `database/02_datos.sql`. Por políticas de seguridad y buenas prácticas de entrega, no se almacenan contraseñas en texto plano dentro del repositorio ni en este manual.
+
+---
+
+## 9. Resumen de Reglas de Negocio Implementadas
+
+- **RN01 / Alta Presencial**: Creación de clientes en mostrador sin requerir credenciales de usuario; si el cliente posteriormente se registra en línea, su cuenta unifica el historial presencial existente.
+- **RN02 / Vigencia de Planes**: Un plan turístico solo puede asociarse a una salida si está activo y la fecha de la salida se encuentra dentro de su ventana de vigencia.
+- **RN04 / Disponibilidad y Cruce de Guías**: Validación en tiempo real del horario de los guías considerando la duración del tour (`inicioA < finB AND inicioB < finA`). Se prohíbe la doble asignación de un guía a salidas que se solapen.
+- **RN06 / RN14 / Política de Menores**: Si una reserva incluye participantes menores de 18 años, el sistema valida la presencia obligatoria de al menos un adulto responsable y genera la plantilla oficial de autorización para menores.
+- **RN07 / Confirmación por Pago**: Una reserva solo pasa al estado `CONFIRMADA` cuando la suma de sus transacciones exitosas cubre el 100% del valor liquidado.
+- **RN08 / Política de Cancelación y Reembolsos**:
+  - Cancelación con más de 5 días de antelación: 80% de reembolso del valor pagado.
+  - Cancelación con 5 días o menos: 0% de reembolso.
+- **D05 / Cancelación por Operador**: Si la administración cancela una salida programada, todas las reservas vinculadas se cancelan automáticamente y se genera un reembolso del 100% de lo pagado.
+- **D06 / Transiciones Terminales**: Los estados `REALIZADA` y `CANCELADA` son finales. Una salida solo puede transicionar a `REALIZADA` desde `PROGRAMADA` y en fecha no futura.
+- **D17 / Integridad de Cartera**: El valor total de la reserva se recalcula dinámicamente como `número de participantes × precio por persona`.
+
+---
+
+## 10. Reportes Analíticos Oficiales (R1 a R10)
+
+Todos los reportes están implementados mediante consultas SQL nativas de alto rendimiento (`JdbcTemplate`) y permiten exportación en formato PDF aplicando los mismos filtros definidos en pantalla:
+
+1. **R1**: Salidas por Tour y Rango de Fechas (Ocupación y Recaudo).
+2. **R2**: Estado de Reservas y Recaudo por Período.
+3. **R3**: Balance de Pagos por Método y Estado de Transacción.
+4. **R4**: Consolidado de Reservas por Municipio del Quindío.
+5. **R5**: Productividad y Horas de Guianza de Guías Acreditados.
+6. **R6**: Top Tours con Mayor Tasa de Ocupación (Tabla Derivada).
+7. **R7**: Historial de Notificaciones Enviadas por Canal.
+8. **R8**: Guías Bilingües con Mayor Número de Salidas Programadas (`HAVING`).
+9. **R9**: Tours que Nunca Han Tenido Cancelaciones de Salida (`NOT EXISTS`).
+10. **R10**: Clientes con Gasto Superior al Promedio General de la Plataforma (Subconsulta Escalar en `HAVING`).
+
+---
+
+## 11. Cumplimiento de Rúbrica y Estándares
+
+- **Sin Triggers**: Toda la lógica de negocio y validación de transiciones está centralizada en los servicios de Spring Boot, preservando la portabilidad del motor de base de datos.
+- **Nombres Estándar de Restricciones**: Restricciones bautizadas con prefijos oficiales (`pk_`, `uq_`, `ck_`, `fk_`).
+- **Respuesta de Conflictos (409)**: Cualquier intento de eliminar o alterar entidades maestras en uso por llaves foráneas retorna un código HTTP 409 con mensaje explicativo, impidiendo errores 500 no controlados.
+- **Zero Emojis**: Interfaz gráfica corporativa y limpia basada en iconografía SVG vectorial.
+- **Descargas Seguras**: Todos los botones de PDF realizan peticiones autenticadas vía interceptor JWT liberando los objetos URL tras la descarga.

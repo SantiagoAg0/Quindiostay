@@ -40,9 +40,9 @@ import { IconComponent } from '../../shared/icon/icon.component';
           Generar reporte
         </app-boton>
 
-        <button class="btn-pdf-disabled" title="Disponible en el índice de reportes con OpenPDF" disabled>
+        <app-boton variant="secondary" (click)="descargarPdf()">
           <app-icon name="file-text" [size]="16"></app-icon> Exportar a PDF
-        </button>
+        </app-boton>
       </div>
 
       <!-- Indicadores KPI -->
@@ -274,6 +274,24 @@ export class ReporteGuiasSalidasComponent implements OnInit {
         this.fechaGeneracion = new Date();
       },
       error: () => this.cargando = false
+    });
+  }
+
+  descargarPdf(): void {
+    this.reportesService.descargarPdf('R5', {
+      desde: this.fechaDesde || undefined,
+      hasta: this.fechaHasta || undefined,
+      minimo: this.minimoSalidas || 1
+    }).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Reporte_R5_Guias_Salidas_QuindioStay.pdf`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: () => alert('Error al descargar el PDF del reporte.')
     });
   }
 

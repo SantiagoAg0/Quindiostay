@@ -14,6 +14,7 @@ import { PlanesListaComponent } from './features/planes/planes-lista.component';
 import { ClientesListaComponent } from './features/clientes/clientes-lista.component';
 import { NotificacionesListaComponent } from './features/notificaciones/notificaciones-lista.component';
 import { UsuariosListaComponent } from './features/usuarios/usuarios-lista.component';
+import { CatalogosListaComponent } from './features/catalogos/catalogos-lista.component';
 import { ReportesIndiceComponent } from './features/reportes/reportes-indice.component';
 import { ReporteGuiasSalidasComponent } from './features/reportes/reporte-guias-salidas.component';
 
@@ -34,8 +35,18 @@ export const routes: Routes = [
         canActivate: [rolGuard],
         data: { roles: ['ADMINISTRADOR_PLATAFORMA', 'OPERADOR', 'ENCARGADO_PRESTADOR'] }
       },
-      { path: 'reservas', component: ReservasListaComponent },
-      { path: 'pagos', component: PagosListaComponent },
+      {
+        path: 'reservas',
+        component: ReservasListaComponent,
+        canActivate: [rolGuard],
+        data: { roles: ['ADMINISTRADOR_PLATAFORMA', 'OPERADOR', 'ENCARGADO_PRESTADOR', 'CLIENTE'] }
+      },
+      {
+        path: 'pagos',
+        component: PagosListaComponent,
+        canActivate: [rolGuard],
+        data: { roles: ['ADMINISTRADOR_PLATAFORMA', 'OPERADOR', 'ENCARGADO_PRESTADOR', 'CLIENTE'] }
+      },
       {
         path: 'prestadores',
         component: PrestadoresListaComponent,
@@ -48,11 +59,27 @@ export const routes: Routes = [
         canActivate: [rolGuard],
         data: { roles: ['ADMINISTRADOR_PLATAFORMA', 'ENCARGADO_PRESTADOR'] }
       },
-      { path: 'clientes', component: ClientesListaComponent },
-      { path: 'notificaciones', component: NotificacionesListaComponent },
+      {
+        path: 'clientes',
+        component: ClientesListaComponent,
+        canActivate: [rolGuard],
+        data: { roles: ['ADMINISTRADOR_PLATAFORMA', 'OPERADOR', 'ENCARGADO_PRESTADOR', 'CLIENTE'] }
+      },
+      {
+        path: 'notificaciones',
+        component: NotificacionesListaComponent,
+        canActivate: [rolGuard],
+        data: { roles: ['ADMINISTRADOR_PLATAFORMA', 'OPERADOR', 'ENCARGADO_PRESTADOR', 'CLIENTE'] }
+      },
       {
         path: 'usuarios',
         component: UsuariosListaComponent,
+        canActivate: [rolGuard],
+        data: { roles: ['ADMINISTRADOR_PLATAFORMA'] }
+      },
+      {
+        path: 'catalogos',
+        component: CatalogosListaComponent,
         canActivate: [rolGuard],
         data: { roles: ['ADMINISTRADOR_PLATAFORMA'] }
       },

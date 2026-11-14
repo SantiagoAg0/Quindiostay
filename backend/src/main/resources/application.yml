@@ -2,15 +2,25 @@ server:
   port: 8080
 
 spring:
+  application:
+    name: quindiostay
   profiles:
-    default: h2
-  jackson:
-    time-zone: America/Bogota
+    default: mysql
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     open-in-view: false
+    database-platform: org.hibernate.dialect.MySQLDialect
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
     properties:
       hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: false
         physical_naming_strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
+  jackson:
+    time-zone: America/Bogota
 
 management:
   endpoints:

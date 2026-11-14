@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface ParticipanteRepository extends JpaRepository<Participante, Long> {
     List<Participante> findByReservaTourIdReserva(Long idReserva);
+    void deleteByReservaTourIdReserva(Long idReserva);
 }

@@ -53,4 +53,26 @@ public class ClienteController {
     public ResponseEntity<ClienteDto> actualizarPerfil(@PathVariable Long id, @Valid @RequestBody ActualizarPerfilRequest req) {
         return ResponseEntity.ok(clienteService.actualizarPerfil(id, req));
     }
+
+    @PostMapping
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR_PLATAFORMA', 'OPERADOR', 'ENCARGADO_PRESTADOR')")
+    @Operation(summary = "Crear nuevo cliente de mostrador (sin perfil de usuario, RN01)")
+    public ResponseEntity<ClienteDto> crear(@Valid @RequestBody co.edu.uniquindio.quindiostay.dto.clientes.CrearClienteRequest req) {
+        return ResponseEntity.status(org.springframework.http.HttpStatus.CREATED).body(clienteService.crearClienteMostrador(req));
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR_PLATAFORMA', 'OPERADOR', 'ENCARGADO_PRESTADOR')")
+    @Operation(summary = "Editar datos de un cliente registrado")
+    public ResponseEntity<ClienteDto> modificar(@PathVariable Long id, @Valid @RequestBody co.edu.uniquindio.quindiostay.dto.clientes.ModificarClienteRequest req) {
+        return ResponseEntity.ok(clienteService.modificarCliente(id, req));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR_PLATAFORMA', 'OPERADOR')")
+    @Operation(summary = "Eliminar un cliente (bloquea con 409 si tiene reservas)")
+    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+        clienteService.eliminarCliente(id);
+        return ResponseEntity.noContent().build();
+    }
 }

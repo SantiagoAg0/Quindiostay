@@ -1,5 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators, FormArray } from '@angular/forms';
 import { ReservasService } from './reservas.service';
 import { SalidasService } from '../salidas/salidas.service';
@@ -21,6 +22,7 @@ import { CrearPagoRequest, MetodoPago } from '../../core/models/pago.model';
 import { IconComponent } from '../../shared/icon/icon.component';
 import { PillEstadoComponent } from '../../shared/pill-estado/pill-estado.component';
 import { TablaVaciaComponent } from '../../shared/tabla-vacia/tabla-vacia.component';
+import { PlantillasService } from '../../core/services/plantillas.service';
 
 @Component({
   selector: 'app-reservas-lista',
@@ -141,12 +143,12 @@ import { TablaVaciaComponent } from '../../shared/tabla-vacia/tabla-vacia.compon
                     <button class="action-btn view" (click)="verDetalle(r)" title="Ver detalle de reserva">
                       <app-icon name="eye" [size]="15"></app-icon>
                     </button>
-                    <a [href]="'/api/plantillas/reserva/' + r.idReserva" target="_blank" class="action-btn pdf-btn" title="Descargar Comprobante PDF (Voucher)">
+                    <button type="button" (click)="plantillasService.descargar('/api/plantillas/reserva/' + r.idReserva, 'comprobante-reserva-' + r.idReserva + '.pdf')" class="action-btn pdf-btn" title="Descargar Comprobante PDF (Voucher)">
                       <app-icon name="file-text" [size]="15"></app-icon>
-                    </a>
-                    <a *ngIf="tieneMenores(r)" [href]="'/api/plantillas/autorizacion-menor/' + r.idReserva" target="_blank" class="action-btn minor-btn" title="Descargar Autorización para Menores (PDF)">
+                    </button>
+                    <button type="button" *ngIf="tieneMenores(r)" (click)="plantillasService.descargar('/api/plantillas/autorizacion-menor/' + r.idReserva, 'autorizacion-menores-' + r.idReserva + '.pdf')" class="action-btn minor-btn" title="Descargar Autorización para Menores (PDF)">
                       <app-icon name="shield" [size]="15"></app-icon>
-                    </a>
+                    </button>
                     <button
                       *ngIf="r.saldoPendiente > 0 && r.estado !== 'CANCELADA'"
                       class="action-btn pay"
@@ -189,26 +191,40 @@ import { TablaVaciaComponent } from '../../shared/tabla-vacia/tabla-vacia.compon
           </div>
 
           <form [formGroup]="formReserva" (ngSubmit)="guardarReserva()" class="modal-body">
-            <!-- Salida y Plan -->
+            <!-- Salida y Operador -->
             <div class="form-row">
-              <div class="form-group">
+              <div class="form-group" [style.flex]="'2'">
                 <label class="form-label">Salida de Tour Programada <span class="req">*</span></label>
                 <select formControlName="idSalida" class="form-control" (change)="onSalidaSeleccionada()">
                   <option [ngValue]="null" disabled>Selecciona una salida</option>
                   <option *ngFor="let s of salidasDisponibles" [ngValue]="s.idSalida">
-                    {{ s.tour.nombre }} - {{ s.fecha }} {{ s.horaInicio.substring(0,5) }} ({{ s.cupo - s.cuposOcupados }} cupos libres)
+                    {{ s.tour.nombre }} | {{ s.fecha }} {{ s.horaInicio ? s.horaInicio.substring(0,5) : '' }} | Operador: {{ s.tour.nombrePrestador || 'Prestador Oficial' }} | $ {{ s.tour.precioPersona | number }} ({{ s.cupo - s.cuposOcupados }} cupos libres)
                   </option>
                 </select>
               </div>
 
+              <div class="form-group" *ngIf="salidaSeleccionadaObj">
+                <label class="form-label">Operador Responsable</label>
+                <div class="readonly-field" style="font-weight: 600; color: #047857; display: flex; align-items: center; gap: 6px;">
+                  <app-icon name="building" [size]="14"></app-icon>
+                  <span>{{ salidaSeleccionadaObj.tour.nombrePrestador || 'Operador Oficial' }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Plan filtrado por el operador de la salida -->
+            <div class="form-row">
               <div class="form-group">
                 <label class="form-label">Plan / Paquete <span class="req">*</span></label>
-                <select formControlName="idPlan" class="form-control">
-                  <option [ngValue]="null" disabled>Selecciona un plan</option>
-                  <option *ngFor="let p of planesDisponibles" [ngValue]="p.idPlan">
-                    {{ p.nombre }}
+                <select formControlName="idPlan" class="form-control" [disabled]="!salidaSeleccionadaObj">
+                  <option [ngValue]="null" disabled>{{ salidaSeleccionadaObj ? 'Selecciona un plan' : 'Selecciona primero una salida' }}</option>
+                  <option *ngFor="let p of planesFiltrados" [ngValue]="p.idPlan">
+                    {{ p.nombre }} - {{ p.tipo }} ($ {{ p.precio | number }})
                   </option>
                 </select>
+                <p class="text-amber text-xs mt-1" *ngIf="salidaSeleccionadaObj && planesFiltrados.length === 0" style="color: #b45309; font-size: 0.8125rem; margin-top: 4px;">
+                  Este operador no tiene planes disponibles para esta salida.
+                </p>
               </div>
             </div>
 
@@ -404,14 +420,14 @@ import { TablaVaciaComponent } from '../../shared/tabla-vacia/tabla-vacia.compon
             </div>
 
             <div class="modal-footer">
-              <a [href]="'/api/plantillas/reserva/' + reservaDetalle.idReserva" target="_blank" class="btn btn-secondary">
+              <button type="button" (click)="plantillasService.descargar('/api/plantillas/reserva/' + reservaDetalle.idReserva, 'comprobante-reserva-' + reservaDetalle.idReserva + '.pdf')" class="btn btn-secondary">
                 <app-icon name="file-text" [size]="16"></app-icon>
                 <span>Descargar Voucher (PDF)</span>
-              </a>
-              <a *ngIf="tieneMenores(reservaDetalle)" [href]="'/api/plantillas/autorizacion-menor/' + reservaDetalle.idReserva" target="_blank" class="btn btn-secondary">
+              </button>
+              <button type="button" *ngIf="tieneMenores(reservaDetalle)" (click)="plantillasService.descargar('/api/plantillas/autorizacion-menor/' + reservaDetalle.idReserva, 'autorizacion-menores-' + reservaDetalle.idReserva + '.pdf')" class="btn btn-secondary">
                 <app-icon name="shield" [size]="16"></app-icon>
                 <span>Autorización Menores (PDF)</span>
-              </a>
+              </button>
               <button type="button" class="btn btn-secondary" (click)="reservaDetalle = null">
                 Cerrar
               </button>
@@ -1188,12 +1204,15 @@ export class ReservasListaComponent implements OnInit {
   private clientesService = inject(ClientesService);
   private pagosService = inject(PagosService);
   authService = inject(AuthService);
+  plantillasService = inject(PlantillasService);
   private fb = inject(FormBuilder);
+  private route = inject(ActivatedRoute);
 
   reservas: ReservaDetalleDto[] = [];
   reservasFiltradas: ReservaDetalleDto[] = [];
   salidasDisponibles: SalidaTour[] = [];
   planesDisponibles: PlanDto[] = [];
+  planesFiltrados: PlanDto[] = [];
   clientesDisponibles: ClienteDto[] = [];
 
   cargando = true;
@@ -1248,6 +1267,38 @@ export class ReservasListaComponent implements OnInit {
   ngOnInit(): void {
     this.cargarReservas();
     this.cargarCatalogos();
+
+    this.route.queryParams.subscribe(params => {
+      const idSalida = params['salida'];
+      if (idSalida) {
+        this.abrirModalNuevaReservaConSalida(Number(idSalida));
+      }
+    });
+  }
+
+  abrirModalNuevaReservaConSalida(idSalida: number): void {
+    this.errorMensaje = null;
+    this.cargarCatalogos();
+
+    this.participantesArray.clear();
+    this.agregarParticipante();
+
+    this.formReserva.reset({
+      idSalida: idSalida,
+      idPlan: null,
+      idCliente: this.authService.esCliente() && this.clientesDisponibles.length ? this.clientesDisponibles[0].idCliente : null,
+      canal: 'WEB'
+    });
+
+    this.salidasService.listar({ size: 50, estado: 'PROGRAMADA' }).subscribe({
+      next: (page) => {
+        this.salidasDisponibles = page.contenido || [];
+        this.formReserva.patchValue({ idSalida: idSalida });
+        this.onSalidaSeleccionada();
+      }
+    });
+
+    this.mostrarModalNueva = true;
   }
 
   cargarCatalogos(): void {
@@ -1257,10 +1308,8 @@ export class ReservasListaComponent implements OnInit {
 
     this.planesService.listar().subscribe({
       next: (planes) => {
-        this.planesDisponibles = planes || [];
-        if (planes.length && !this.formReserva.get('idPlan')?.value) {
-          this.formReserva.patchValue({ idPlan: planes[0].idPlan });
-        }
+        this.planesDisponibles = (planes || []).filter(p => p.estado === 'ACTIVO');
+        this.filtrarPlanesPorSalida();
       }
     });
 
@@ -1325,24 +1374,18 @@ export class ReservasListaComponent implements OnInit {
 
   abrirModalNuevaReserva(): void {
     this.errorMensaje = null;
-    const esCliente = this.authService.esCliente();
-    
-    // Asegurar que los catálogos estén disponibles
     this.cargarCatalogos();
 
+    this.salidaSeleccionadaObj = null;
+    this.planesFiltrados = [];
     this.formReserva.reset({
-      idSalida: this.salidasDisponibles.length ? this.salidasDisponibles[0].idSalida : null,
-      idPlan: this.planesDisponibles.length ? this.planesDisponibles[0].idPlan : null,
-      idCliente: this.clientesDisponibles.length ? this.clientesDisponibles[0].idCliente : null,
+      idSalida: null,
+      idPlan: null,
+      idCliente: this.authService.esCliente() && this.clientesDisponibles.length ? this.clientesDisponibles[0].idCliente : null,
       canal: 'WEB'
     });
     this.participantesArray.clear();
     this.agregarParticipante(); // 1 default participant
-    if (this.salidasDisponibles.length) {
-      this.salidaSeleccionadaObj = this.salidasDisponibles[0];
-    } else {
-      this.salidaSeleccionadaObj = null;
-    }
     this.mostrarModalNueva = true;
   }
 
@@ -1367,6 +1410,31 @@ export class ReservasListaComponent implements OnInit {
   onSalidaSeleccionada(): void {
     const id = this.formReserva.get('idSalida')?.value;
     this.salidaSeleccionadaObj = this.salidasDisponibles.find((s) => s.idSalida === id) || null;
+    this.filtrarPlanesPorSalida();
+  }
+
+  filtrarPlanesPorSalida(): void {
+    if (!this.salidaSeleccionadaObj || !this.salidaSeleccionadaObj.tour) {
+      this.planesFiltrados = [];
+      this.formReserva.patchValue({ idPlan: null });
+      return;
+    }
+
+    const idPrestador = (this.salidaSeleccionadaObj.tour as any).idPrestador;
+    const fechaSalida = this.salidaSeleccionadaObj.fecha;
+
+    // Solo planes ACTIVOS del prestador de la salida y vigentes en la fecha de servicio
+    this.planesFiltrados = this.planesDisponibles.filter((p) => {
+      const coincidePrestador = !idPrestador || p.idPrestador === idPrestador;
+      const vigente = (!p.fechaInicio || p.fechaInicio <= fechaSalida) && (!p.fechaFin || p.fechaFin >= fechaSalida);
+      return coincidePrestador && vigente;
+    });
+
+    if (this.planesFiltrados.length === 1) {
+      this.formReserva.patchValue({ idPlan: this.planesFiltrados[0].idPlan });
+    } else {
+      this.formReserva.patchValue({ idPlan: null });
+    }
   }
 
   guardarReserva(): void {
@@ -1376,11 +1444,15 @@ export class ReservasListaComponent implements OnInit {
     this.errorMensaje = null;
     const v = this.formReserva.value;
 
+    const esCli = this.authService.esCliente();
+    const idClienteFinal = esCli ? (this.clientesDisponibles[0]?.idCliente || null) : v.idCliente;
+    const canalFinal = esCli ? ('WEB' as CanalReserva) : (v.canal || ('WEB' as CanalReserva));
+
     const req: CrearReservaRequest = {
       idSalida: v.idSalida!,
       idPlan: v.idPlan!,
-      idCliente: v.idCliente!,
-      canal: v.canal!,
+      idCliente: idClienteFinal!,
+      canal: canalFinal,
       participantes: v.participantes as ParticipanteDto[]
     };
 

@@ -30,4 +30,16 @@ export class ClientesService {
   actualizarPerfilPorId(id: number, request: ActualizarPerfilRequest): Observable<ClienteDto> {
     return this.http.put<ClienteDto>(`${this.apiUrl}/${id}/perfil`, request);
   }
+
+  crear(request: any): Observable<ClienteDto> {
+    return this.http.post<ClienteDto>(this.apiUrl, request);
+  }
+
+  modificar(id: number, request: any): Observable<ClienteDto> {
+    return this.http.put<ClienteDto>(`${this.apiUrl}/${id}`, request);
+  }
+
+  eliminar(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
 }

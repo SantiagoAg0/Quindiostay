@@ -176,7 +176,7 @@ import { IconComponent } from '../../shared/icon/icon.component';
               <div class="form-group">
                 <label class="form-label">Prestador Operador *</label>
                 <select class="form-select" formControlName="idPrestador">
-                  <option [ngValue]="null" disabled>Selecciona un prestador</option>
+                  <option [ngValue]="null" disabled>{{ prestadores.length ? 'Selecciona un prestador' : 'Cargando prestadores...' }}</option>
                   <option *ngFor="let p of prestadores" [ngValue]="p.idPrestador">
                     {{ p.nombreComercial }} ({{ p.tipoPrestadorNombre || 'Prestador' }})
                   </option>
@@ -587,14 +587,36 @@ export class ToursListaComponent implements OnInit {
 
   abrirModalCrear(): void {
     this.editandoId = null;
+    const prestadorDefault = this.authService.usuarioActual()?.idPrestador || (this.prestadores.length ? this.prestadores[0].idPrestador : null);
     this.tourForm.reset({
       duracionHoras: 3.0,
       dificultad: 'MEDIA',
       edadMinima: 8,
       precioPersona: 85000,
-      idCategoria: this.categorias[0]?.idCategoria || null,
-      idPrestador: this.prestadores[0]?.idPrestador || null
+      idCategoria: this.categorias.length ? this.categorias[0].idCategoria : null,
+      idPrestador: prestadorDefault
     });
+
+    if (this.prestadores.length === 0) {
+      this.prestadoresService.listar().subscribe({
+        next: (prests) => {
+          this.prestadores = prests || [];
+          if (!this.tourForm.get('idPrestador')?.value && this.prestadores.length) {
+            this.tourForm.patchValue({ idPrestador: prestadorDefault || this.prestadores[0].idPrestador });
+          }
+        }
+      });
+    }
+    if (this.categorias.length === 0) {
+      this.toursService.listarCategorias().subscribe({
+        next: (cats) => {
+          this.categorias = cats || [];
+          if (!this.tourForm.get('idCategoria')?.value && this.categorias.length) {
+            this.tourForm.patchValue({ idCategoria: this.categorias[0].idCategoria });
+          }
+        }
+      });
+    }
     this.mostrarModal = true;
   }
 

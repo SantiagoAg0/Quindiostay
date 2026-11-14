@@ -47,13 +47,17 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ApiError> manejarCredenciales(BadCredentialsException ex, HttpServletRequest request) {
-        var error = new ApiError(HttpStatus.UNAUTHORIZED.value(), "Usuario o contrasena incorrectos", request.getRequestURI());
+        String msg = (ex.getMessage() != null && !ex.getMessage().isBlank()) ? ex.getMessage() : "Usuario o contraseña incorrectos";
+        var error = new ApiError(HttpStatus.UNAUTHORIZED.value(), msg, request.getRequestURI());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ApiError> manejarAccesoDenegado(AccessDeniedException ex, HttpServletRequest request) {
-        var error = new ApiError(HttpStatus.FORBIDDEN.value(), "No tiene permisos para realizar esta accion", request.getRequestURI());
+        String msg = (ex.getMessage() != null && !ex.getMessage().isBlank() && !ex.getMessage().equalsIgnoreCase("Access Denied"))
+                ? ex.getMessage()
+                : "No tiene permisos para realizar esta accion";
+        var error = new ApiError(HttpStatus.FORBIDDEN.value(), msg, request.getRequestURI());
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
     }
 

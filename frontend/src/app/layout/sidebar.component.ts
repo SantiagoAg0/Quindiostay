@@ -131,11 +131,16 @@ import { IconComponent } from '../shared/icon/icon.component';
           </a>
         </ng-container>
 
-        <!-- Usuarios del Sistema (Solo Administrador de Plataforma) -->
+        <!-- Usuarios del Sistema y Catálogos (Solo Administrador de Plataforma) -->
         <ng-container *ngIf="authService.esAdmin()">
           <a routerLink="/usuarios" routerLinkActive="active" class="nav-item">
             <app-icon name="shield" [size]="18"></app-icon>
             <span>Usuarios Internos</span>
+          </a>
+
+          <a routerLink="/catalogos" routerLinkActive="active" class="nav-item">
+            <app-icon name="layers" [size]="18"></app-icon>
+            <span>Catálogos del Sistema</span>
           </a>
         </ng-container>
 

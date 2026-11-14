@@ -16,6 +16,7 @@ import co.edu.uniquindio.quindiostay.security.UsuarioPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -70,6 +71,11 @@ public class SalidaTourService {
         // ENCARGADO_PRESTADOR: solo sobre tours de su prestador
         validarAccesoPrestador(tour.getPrestador().getIdPrestador());
 
+        // D05: No permitir pasar a CANCELADA mediante modificar; debe usarse cancelar
+        if (req.estado() != null && req.estado() == EstadoSalida.CANCELADA) {
+            throw new ReglaNegocioException("D05: No se puede cambiar el estado a CANCELADA por esta vía. Utilice la opción de cancelar salida para procesar reembolsos.");
+        }
+
         var guiaIdioma = guiaIdiomaRepository.findById(new GuiaIdiomaId(req.idGuia(), req.idIdioma()))
                 .orElseThrow(() -> new ReglaNegocioException("El guia no habla el idioma seleccionado"));
 
@@ -108,6 +114,11 @@ public class SalidaTourService {
 
         // ENCARGADO_PRESTADOR: solo sobre tours de su prestador
         validarAccesoPrestador(tour.getPrestador().getIdPrestador());
+
+        // D05: No permitir pasar a CANCELADA mediante modificar; debe usarse cancelar
+        if (req.estado() != null && req.estado() == EstadoSalida.CANCELADA) {
+            throw new ReglaNegocioException("D05: No se puede cambiar el estado a CANCELADA por esta vía. Utilice la opción de cancelar salida para procesar reembolsos.");
+        }
 
         var guiaIdioma = guiaIdiomaRepository.findById(new GuiaIdiomaId(req.idGuia(), req.idIdioma()))
                 .orElseThrow(() -> new ReglaNegocioException("El guia no habla el idioma seleccionado"));
@@ -267,7 +278,7 @@ public class SalidaTourService {
         if (auth != null && auth.getPrincipal() instanceof UsuarioPrincipal principal) {
             if ("ENCARGADO_PRESTADOR".equalsIgnoreCase(principal.getRol())) {
                 if (principal.getIdPrestador() == null || !principal.getIdPrestador().equals(idPrestadorTour)) {
-                    throw new ReglaNegocioException("No tiene permisos para operar sobre tours de otro prestador");
+                    throw new AccessDeniedException("No tiene permisos para operar sobre tours de otro prestador");
                 }
             }
         }

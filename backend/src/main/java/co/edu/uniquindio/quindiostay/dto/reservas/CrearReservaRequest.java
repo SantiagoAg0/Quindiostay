@@ -2,23 +2,15 @@ package co.edu.uniquindio.quindiostay.dto.reservas;
 
 import co.edu.uniquindio.quindiostay.domain.enums.CanalReserva;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
+import java.time.LocalDate;
 import java.util.List;
 
 public record CrearReservaRequest(
-        @NotNull(message = "La salida es obligatoria")
-        Long idSalida,
-
-        @NotNull(message = "El plan es obligatorio")
-        Long idPlan,
-
-        Long idCliente, // Opcional si viene de usuario autenticado como CLIENTE
-
-        @NotNull(message = "El canal de reserva es obligatorio")
-        CanalReserva canal,
-
-        @NotEmpty(message = "Debe registrar al menos un participante")
+        Long idSalida,          // Opcional si es reserva de solo plan (RF04)
+        Long idPlan,            // Opcional si se deduce automáticamente del operador de la salida
+        Long idCliente,         // Opcional si viene de usuario autenticado como CLIENTE
+        CanalReserva canal,     // Opcional (por defecto WEB)
+        LocalDate fechaServicio,// Opcional para reserva solo plan
         @Valid
         List<ParticipanteDto> participantes
 ) {}

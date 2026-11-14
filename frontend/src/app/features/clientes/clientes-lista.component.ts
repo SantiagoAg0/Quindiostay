@@ -125,6 +125,10 @@ import { TablaVaciaComponent } from '../../shared/tabla-vacia/tabla-vacia.compon
             <h1 class="page-title">Directorio de Clientes</h1>
             <p class="page-subtitle">Padrón de usuarios registrados, canales preferidos y configuración de alertas.</p>
           </div>
+          <button class="btn btn-primary" (click)="abrirModalNuevoCliente()" *ngIf="!esSoloCliente">
+            <app-icon name="plus" [size]="16"></app-icon>
+            <span>Nuevo Cliente (Mostrador)</span>
+          </button>
         </div>
 
         <!-- Filtros -->
@@ -206,6 +210,9 @@ import { TablaVaciaComponent } from '../../shared/tabla-vacia/tabla-vacia.compon
                     <button class="action-btn edit" (click)="abrirModalEditar(c)" title="Editar preferencias">
                       <app-icon name="edit" [size]="14"></app-icon>
                     </button>
+                    <button class="action-btn delete" (click)="confirmarEliminarCliente(c)" title="Eliminar cliente">
+                      <app-icon name="trash" [size]="14"></app-icon>
+                    </button>
                   </td>
                 </tr>
               </tbody>
@@ -272,8 +279,8 @@ import { TablaVaciaComponent } from '../../shared/tabla-vacia/tabla-vacia.compon
               <div class="form-group">
                 <label class="form-label">Acepta Promociones</label>
                 <select formControlName="aceptaPromociones" class="form-control">
-                  <option value="S">Sí</option>
-                  <option value="N">No</option>
+                  <option value="SI">Sí</option>
+                  <option value="NO">No</option>
                 </select>
               </div>
             </div>
@@ -285,6 +292,87 @@ import { TablaVaciaComponent } from '../../shared/tabla-vacia/tabla-vacia.compon
               <button type="submit" class="btn btn-primary" [disabled]="formAdmin.invalid || guardando">
                 <app-icon name="check" [size]="16"></app-icon>
                 <span>{{ guardando ? 'Guardando...' : 'Guardar Cambios' }}</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- MODAL NUEVO CLIENTE MOSTRADOR (RN01) -->
+      <div class="modal-backdrop" *ngIf="mostrarModalNuevo" (click)="cerrarModalNuevo()">
+        <div class="modal-dialog" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <div>
+              <h3 class="modal-title">Nuevo Cliente de Mostrador</h3>
+              <p class="modal-subtitle">Alta de cliente presencial sin perfil de usuario (RN01).</p>
+            </div>
+            <button class="close-btn" (click)="cerrarModalNuevo()">
+              <app-icon name="x" [size]="18"></app-icon>
+            </button>
+          </div>
+
+          <div *ngIf="errorNuevoCliente" class="alert-box error" style="margin: 16px 24px 0; background: #fee2e2; color: #991b1b; padding: 10px 14px; border-radius: 8px;">
+            <app-icon name="alert" [size]="16"></app-icon>
+            <span>{{ errorNuevoCliente }}</span>
+          </div>
+
+          <form [formGroup]="formNuevoCliente" (ngSubmit)="guardarNuevoCliente()" class="modal-body">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Tipo Documento *</label>
+                <select formControlName="tipoDocumento" class="form-control">
+                  <option value="CC">Cédula de Ciudadanía (CC)</option>
+                  <option value="CE">Cédula de Extranjería (CE)</option>
+                  <option value="PASAPORTE">Pasaporte</option>
+                  <option value="TI">Tarjeta de Identidad (TI)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Número Documento *</label>
+                <input type="text" formControlName="numeroDocumento" class="form-control" placeholder="Ej: 1094900123" />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Nombres *</label>
+                <input type="text" formControlName="nombres" class="form-control" placeholder="Ej: Carlos" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Apellidos *</label>
+                <input type="text" formControlName="apellidos" class="form-control" placeholder="Ej: Restrepo" />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Correo Electrónico *</label>
+                <input type="email" formControlName="correo" class="form-control" placeholder="carlos@correo.com" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Teléfono Móvil *</label>
+                <input type="text" formControlName="telefono" class="form-control" placeholder="Ej: 3101234567" />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Fecha Nacimiento *</label>
+                <input type="date" formControlName="fechaNacimiento" class="form-control" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Ciudad de Origen</label>
+                <input type="text" formControlName="ciudadOrigen" class="form-control" placeholder="Ej: Armenia" />
+              </div>
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" (click)="cerrarModalNuevo()">
+                Cancelar
+              </button>
+              <button type="submit" class="btn btn-primary" [disabled]="formNuevoCliente.invalid || guardandoNuevo">
+                <app-icon name="check" [size]="16"></app-icon>
+                <span>{{ guardandoNuevo ? 'Guardando...' : 'Crear Cliente' }}</span>
               </button>
             </div>
           </form>
@@ -713,6 +801,20 @@ export class ClientesListaComponent implements OnInit {
   mensajeExito: string | null = null;
 
   clienteSeleccionado: ClienteDto | null = null;
+  mostrarModalNuevo = false;
+  guardandoNuevo = false;
+  errorNuevoCliente: string | null = null;
+
+  formNuevoCliente = this.fb.group({
+    tipoDocumento: ['CC', Validators.required],
+    numeroDocumento: ['', Validators.required],
+    nombres: ['', Validators.required],
+    apellidos: ['', Validators.required],
+    correo: ['', [Validators.required, Validators.email]],
+    telefono: ['', [Validators.required, Validators.pattern('^3[0-9]{9}$')]],
+    fechaNacimiento: ['', Validators.required],
+    ciudadOrigen: ['']
+  });
 
   formPerfil = this.fb.group({
     telefono: [''],
@@ -871,6 +973,54 @@ export class ClientesListaComponent implements OnInit {
       error: (err) => {
         this.guardando = false;
         alert(err.error?.mensaje || 'Error al actualizar cliente');
+      }
+    });
+  }
+
+  abrirModalNuevoCliente(): void {
+    this.formNuevoCliente.reset({ tipoDocumento: 'CC' });
+    this.errorNuevoCliente = null;
+    this.mostrarModalNuevo = true;
+  }
+
+  cerrarModalNuevo(): void {
+    this.mostrarModalNuevo = false;
+    this.errorNuevoCliente = null;
+  }
+
+  guardarNuevoCliente(): void {
+    if (this.formNuevoCliente.invalid) return;
+
+    this.guardandoNuevo = true;
+    this.errorNuevoCliente = null;
+
+    const val = this.formNuevoCliente.value;
+    this.clientesService.crear(val).subscribe({
+      next: () => {
+        this.guardandoNuevo = false;
+        this.cerrarModalNuevo();
+        this.cargarClientes();
+      },
+      error: (err) => {
+        this.guardandoNuevo = false;
+        this.errorNuevoCliente = err.error?.mensaje || 'Error al registrar cliente';
+      }
+    });
+  }
+
+  confirmarEliminarCliente(c: ClienteDto): void {
+    if (!confirm(`¿Está seguro de eliminar al cliente ${c.nombres} ${c.apellidos}?`)) return;
+
+    this.clientesService.eliminar(c.idCliente).subscribe({
+      next: () => {
+        this.cargarClientes();
+      },
+      error: (err) => {
+        if (err.status === 409) {
+          alert('No se puede eliminar el cliente porque tiene reservas registradas en el sistema (Restricción de Integridad).');
+        } else {
+          alert(err.error?.mensaje || 'Error al eliminar cliente');
+        }
       }
     });
   }

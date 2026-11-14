@@ -101,26 +101,24 @@ public class ReporteService {
     // R5. Guías con más salidas realizadas (Intermedio · GROUP BY + HAVING)
     public List<R5GuiaSalidasFila> obtenerReporteGuiasMasSalidas(LocalDate desde, LocalDate hasta, Integer minimo) {
         int min = (minimo != null && minimo > 0) ? minimo : 1;
+        LocalDate d = desde != null ? desde : LocalDate.of(2026, 7, 1);
+        LocalDate h = hasta != null ? hasta : LocalDate.of(2026, 9, 30);
+
         String sql = """
             SELECT g.id_guia, g.nombre AS guia,
-                   GROUP_CONCAT(DISTINCT i.nombre ORDER BY i.nombre SEPARATOR ', ') AS idiomas_concat,
-                   COUNT(DISTINCT s.id_salida) AS total_salidas,
-                   SUM(DISTINCT t.duracion_horas) AS horas_guiadas
+                   (SELECT GROUP_CONCAT(DISTINCT i.nombre ORDER BY i.nombre SEPARATOR ', ')
+                    FROM guia_idioma gi JOIN idioma i ON i.id_idioma = gi.id_idioma
+                    WHERE gi.id_guia = g.id_guia) AS idiomas_concat,
+                   COUNT(*) AS total_salidas,
+                   SUM(t.duracion_horas) AS horas_guiadas
             FROM guia g
             JOIN salida_tour s ON s.id_guia = g.id_guia
             JOIN tour t        ON t.id_tour = s.id_tour
-            LEFT JOIN guia_idioma gi ON gi.id_guia = g.id_guia
-            LEFT JOIN idioma i ON i.id_idioma = gi.id_idioma
-            WHERE s.estado = 'REALIZADA'
-              AND (? IS NULL OR s.fecha >= ?)
-              AND (? IS NULL OR s.fecha <= ?)
+            WHERE s.estado = 'REALIZADA' AND s.fecha BETWEEN ? AND ?
             GROUP BY g.id_guia, g.nombre
-            HAVING COUNT(DISTINCT s.id_salida) >= ?
+            HAVING COUNT(*) >= ?
             ORDER BY total_salidas DESC, horas_guiadas DESC
         """;
-        java.sql.Date dSql = desde != null ? java.sql.Date.valueOf(desde) : null;
-        java.sql.Date hSql = hasta != null ? java.sql.Date.valueOf(hasta) : null;
-
         return jdbcTemplate.query(sql, (rs, rowNum) -> {
             String idiomasStr = rs.getString("idiomas_concat");
             List<String> idiomas = (idiomasStr != null && !idiomasStr.isBlank())
@@ -133,7 +131,7 @@ public class ReporteService {
                     rs.getLong("total_salidas"),
                     rs.getBigDecimal("horas_guiadas")
             );
-        }, dSql, dSql, hSql, hSql, min);
+        }, java.sql.Date.valueOf(d), java.sql.Date.valueOf(h), min);
     }
 
     // R6. Ocupación promedio por categoría de tour (Avanzado · subconsulta en el FROM · gráfico de barras)
@@ -180,6 +178,11 @@ public class ReporteService {
 
     // R8. Prestadores con más cancelaciones (Intermedio · GROUP BY + HAVING)
     public List<R8PrestadorCancelacionesFila> obtenerReporteR8() {
+        return obtenerReporteR8(1);
+    }
+
+    public List<R8PrestadorCancelacionesFila> obtenerReporteR8(Integer minimoCancelaciones) {
+        int min = (minimoCancelaciones != null && minimoCancelaciones > 0) ? minimoCancelaciones : 1;
         String sql = """
             SELECT pr.nombre_comercial AS prestador, m.nombre AS municipio,
                    COUNT(*) AS reservas_canceladas, SUM(r.valor_total) AS valor_cancelado
@@ -189,6 +192,7 @@ public class ReporteService {
             JOIN municipio m  ON m.id_municipio = pr.id_municipio
             WHERE r.estado = 'CANCELADA'
             GROUP BY pr.id_prestador, pr.nombre_comercial, m.nombre
+            HAVING COUNT(*) >= ?
             ORDER BY reservas_canceladas DESC, valor_cancelado DESC
         """;
         return jdbcTemplate.query(sql, (rs, rowNum) -> new R8PrestadorCancelacionesFila(
@@ -196,7 +200,7 @@ public class ReporteService {
                 rs.getString("municipio"),
                 rs.getLong("reservas_canceladas"),
                 rs.getBigDecimal("valor_cancelado")
-        ));
+        ), min);
     }
 
     // R9. Guías sin salidas en un periodo (Avanzado · NOT EXISTS)

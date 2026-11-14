@@ -39,4 +39,19 @@ public class NotificacionController {
     public ResponseEntity<NotificacionDto> marcarLeida(@PathVariable Long id) {
         return ResponseEntity.ok(notificacionService.marcarLeida(id));
     }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR_PLATAFORMA', 'OPERADOR', 'ENCARGADO_PRESTADOR')")
+    @Operation(summary = "Actualizar datos de una notificación")
+    public ResponseEntity<NotificacionDto> modificar(@PathVariable Long id, @Valid @RequestBody CrearNotificacionRequest req) {
+        return ResponseEntity.ok(notificacionService.modificar(id, req));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR_PLATAFORMA', 'OPERADOR', 'ENCARGADO_PRESTADOR')")
+    @Operation(summary = "Eliminar una notificación")
+    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+        notificacionService.eliminar(id);
+        return ResponseEntity.noContent().build();
+    }
 }

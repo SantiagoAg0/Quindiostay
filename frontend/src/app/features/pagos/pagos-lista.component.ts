@@ -9,6 +9,7 @@ import { IconComponent } from '../../shared/icon/icon.component';
 import { PillEstadoComponent } from '../../shared/pill-estado/pill-estado.component';
 import { TablaVaciaComponent } from '../../shared/tabla-vacia/tabla-vacia.component';
 import { AuthService } from '../../core/auth/auth.service';
+import { PlantillasService } from '../../core/services/plantillas.service';
 
 @Component({
   selector: 'app-pagos-lista',
@@ -136,9 +137,9 @@ import { AuthService } from '../../core/auth/auth.service';
                 </td>
                 <td class="actions-col">
                   <div class="actions-group">
-                    <a [href]="'/api/plantillas/pago/' + p.idPago" target="_blank" class="action-btn pdf-btn" title="Descargar Recibo de Pago (PDF)">
+                    <button type="button" (click)="plantillasService.descargar('/api/plantillas/pago/' + p.idPago, 'recibo-pago-' + p.idPago + '.pdf')" class="action-btn pdf-btn" title="Descargar Recibo de Pago (PDF)">
                       <app-icon name="file-text" [size]="14"></app-icon>
-                    </a>
+                    </button>
                     <button
                       *ngIf="!authService.esCliente() && p.estado === 'EXITOSO'"
                       class="action-btn refund"
@@ -698,6 +699,7 @@ export class PagosListaComponent implements OnInit {
   private reservasService = inject(ReservasService);
   private fb = inject(FormBuilder);
   authService = inject(AuthService);
+  plantillasService = inject(PlantillasService);
 
   pagos: PagoDetalleDto[] = [];
   pagosFiltrados: PagoDetalleDto[] = [];

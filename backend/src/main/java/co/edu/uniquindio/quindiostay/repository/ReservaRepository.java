@@ -10,6 +10,8 @@ import java.util.List;
 public interface ReservaRepository extends JpaRepository<Reserva, Long> {
     List<Reserva> findByClienteIdCliente(Long idCliente);
 
+    long countByClienteIdCliente(Long idCliente);
+
     @Query("SELECT r FROM Reserva r WHERE r.plan.prestador.idPrestador = :idPrestador")
     List<Reserva> findByPrestadorId(@Param("idPrestador") Long idPrestador);
 

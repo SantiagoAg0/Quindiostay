@@ -115,6 +115,40 @@ public class NotificacionService {
         return convertirADto(n);
     }
 
+    @Transactional
+    public NotificacionDto modificar(Long id, CrearNotificacionRequest req) {
+        Notificacion n = notificacionRepository.findById(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Notificacion", id));
+
+        Cliente cliente = clienteRepository.findById(req.idCliente())
+                .orElseThrow(() -> new RecursoNoEncontradoException("Cliente", req.idCliente()));
+
+        Reserva reserva = null;
+        if (req.idReserva() != null) {
+            reserva = reservaRepository.findById(req.idReserva())
+                    .orElseThrow(() -> new RecursoNoEncontradoException("Reserva", req.idReserva()));
+            if (!reserva.getCliente().getIdCliente().equals(req.idCliente())) {
+                throw new ReglaNegocioException("D12: El cliente de la notificacion debe coincidir con el cliente de la reserva");
+            }
+        }
+
+        n.setTipo(req.tipo());
+        n.setCanal(req.canal());
+        n.setMensaje(req.mensaje());
+        n.setFechaProgramada(req.fechaProgramada());
+        n.setCliente(cliente);
+        n.setReserva(reserva);
+        n = notificacionRepository.save(n);
+        return convertirADto(n);
+    }
+
+    @Transactional
+    public void eliminar(Long id) {
+        Notificacion n = notificacionRepository.findById(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Notificacion", id));
+        notificacionRepository.delete(n);
+    }
+
     private NotificacionDto convertirADto(Notificacion n) {
         String cliNombre = n.getCliente() != null ? n.getCliente().getNombres() + " " + n.getCliente().getApellidos() : "N/A";
         Long idRes = n.getReserva() != null ? n.getReserva().getIdReserva() : null;

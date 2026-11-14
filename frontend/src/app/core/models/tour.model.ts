@@ -6,6 +6,8 @@ export interface TourResumen {
   duracionHoras: number;
   dificultad: Dificultad;
   precioPersona: number;
+  idPrestador?: number;
+  nombrePrestador?: string;
 }
 
 export interface TourDetalleDto {

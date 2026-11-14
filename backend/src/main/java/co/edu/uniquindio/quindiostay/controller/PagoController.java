@@ -44,4 +44,29 @@ public class PagoController {
     public ResponseEntity<PagoDetalleDto> reembolsar(@PathVariable Long id) {
         return ResponseEntity.ok(pagoService.reembolsar(id));
     }
+
+    @GetMapping("/{id}")
+    @Operation(summary = "Obtener detalle de un pago por ID")
+    public ResponseEntity<PagoDetalleDto> obtenerPorId(@PathVariable Long id) {
+        return ResponseEntity.ok(pagoService.obtenerPorId(id));
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR_PLATAFORMA', 'OPERADOR')")
+    @Operation(summary = "Actualizar estado u observación de un pago")
+    public ResponseEntity<PagoDetalleDto> modificar(
+            @PathVariable Long id,
+            @RequestParam(required = false) EstadoPago estado,
+            @RequestParam(required = false) String observacion
+    ) {
+        return ResponseEntity.ok(pagoService.modificar(id, estado, observacion));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR_PLATAFORMA', 'OPERADOR')")
+    @Operation(summary = "Eliminar un pago (solo si no es EXITOSO)")
+    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+        pagoService.eliminar(id);
+        return ResponseEntity.noContent().build();
+    }
 }

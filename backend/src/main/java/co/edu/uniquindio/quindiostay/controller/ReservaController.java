@@ -52,4 +52,20 @@ public class ReservaController {
     public ResponseEntity<ReservaDetalleDto> cancelar(@PathVariable Long id, @RequestParam(required = false, defaultValue = "Cancelacion solicitada") String motivo) {
         return ResponseEntity.ok(reservaService.cancelarReserva(id, motivo));
     }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Modificar participantes de una reserva en estado PENDIENTE")
+    public ResponseEntity<ReservaDetalleDto> modificar(
+            @PathVariable Long id,
+            @RequestBody List<co.edu.uniquindio.quindiostay.dto.reservas.ParticipanteDto> participantes
+    ) {
+        return ResponseEntity.ok(reservaService.modificar(id, participantes));
+    }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Eliminar una reserva en estado PENDIENTE sin pagos")
+    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+        reservaService.eliminar(id);
+        return ResponseEntity.noContent().build();
+    }
 }

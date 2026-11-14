@@ -177,6 +177,11 @@ import { IconComponent } from '../../../shared/icon/icon.component';
           </button>
         </div>
 
+        <div *ngIf="errorMensajeModal" class="error-alert animate-fade-in" style="margin-bottom: 16px;">
+          <app-icon name="alert" [size]="18"></app-icon>
+          <span>{{ errorMensajeModal }}</span>
+        </div>
+
         <form [formGroup]="registroForm" (ngSubmit)="onRegistroSubmit()">
           <div class="form-grid-2">
             <div class="form-group">
@@ -820,6 +825,7 @@ export class LoginComponent {
   cargando = false;
   registrando = false;
   errorMensaje: string | null = null;
+  errorMensajeModal: string | null = null;
   exitoMensaje: string | null = null;
   mostrarRegistroModal = false;
 
@@ -834,8 +840,9 @@ export class LoginComponent {
     tipoDocumento: ['CC', Validators.required],
     numeroDocumento: ['', Validators.required],
     correo: ['', [Validators.required, Validators.email]],
-    telefono: [''],
-    ciudadOrigen: [''],
+    telefono: ['', [Validators.required, Validators.pattern('^3[0-9]{9}$')]],
+    fechaNacimiento: ['', Validators.required],
+    ciudadOrigen: ['', Validators.required],
     contrasena: ['', [Validators.required, Validators.minLength(6)]],
     idiomaPreferido: ['ESPAÑOL'],
     canalPreferido: ['CORREO'],
@@ -846,12 +853,14 @@ export class LoginComponent {
   cambiarTipo(tipo: 'PERSONAL' | 'CLIENTE'): void {
     this.tipoIngreso = tipo;
     this.errorMensaje = null;
+    this.errorMensajeModal = null;
     this.loginForm.reset();
   }
 
   autocompletar(user: string, pass: string, tipo: 'PERSONAL' | 'CLIENTE'): void {
     this.tipoIngreso = tipo;
     this.errorMensaje = null;
+    this.errorMensajeModal = null;
     this.loginForm.patchValue({
       identificador: user,
       contrasena: pass
@@ -889,10 +898,12 @@ export class LoginComponent {
 
   abrirModalRegistro(): void {
     this.mostrarRegistroModal = true;
+    this.errorMensajeModal = null;
   }
 
   cerrarModalRegistro(): void {
     this.mostrarRegistroModal = false;
+    this.errorMensajeModal = null;
     this.registroForm.reset({
       tipoDocumento: 'CC',
       idiomaPreferido: 'ESPAÑOL',
@@ -903,10 +914,14 @@ export class LoginComponent {
   }
 
   onRegistroSubmit(): void {
-    if (this.registroForm.invalid) return;
+    if (this.registroForm.invalid) {
+      this.registroForm.markAllAsTouched();
+      this.errorMensajeModal = 'Por favor complete todos los campos obligatorios correctamente.';
+      return;
+    }
 
     this.registrando = true;
-    this.errorMensaje = null;
+    this.errorMensajeModal = null;
 
     const v = this.registroForm.value;
     this.authService.registroCliente({
@@ -915,8 +930,9 @@ export class LoginComponent {
       tipoDocumento: v.tipoDocumento!,
       numeroDocumento: v.numeroDocumento!,
       correo: v.correo!,
-      telefono: v.telefono || undefined,
-      ciudadOrigen: v.ciudadOrigen || undefined,
+      telefono: v.telefono!,
+      fechaNacimiento: v.fechaNacimiento!,
+      ciudadOrigen: v.ciudadOrigen!,
       contrasena: v.contrasena!,
       idiomaPreferido: v.idiomaPreferido || 'ESPAÑOL',
       canalPreferido: v.canalPreferido || 'CORREO',
@@ -931,11 +947,11 @@ export class LoginComponent {
       error: (err) => {
         this.registrando = false;
         if (err.status === 400) {
-          this.errorMensaje = err.error?.mensaje || 'Datos de registro inválidos. Verifique la información ingresada.';
+          this.errorMensajeModal = err.error?.mensaje || 'Datos de registro inválidos. Verifique la información ingresada.';
         } else if (err.status === 409) {
-          this.errorMensaje = 'Ya existe una cuenta con este correo o documento.';
+          this.errorMensajeModal = 'Ya existe una cuenta con este correo o documento.';
         } else {
-          this.errorMensaje = 'Error de conexión. Intente nuevamente en unos momentos.';
+          this.errorMensajeModal = 'Error de conexión. Intente nuevamente en unos momentos.';
         }
       }
     });

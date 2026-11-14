@@ -895,7 +895,26 @@ export class ReportesIndiceComponent implements OnInit, AfterViewInit {
 
   exportarPdfActual(): void {
     this.descargandoPdf = true;
-    this.reportesService.descargarPdf(this.reporteActivo).subscribe({
+
+    const filtros: Record<string, any> = {};
+    if (this.reporteActivo === 'R1' && this.r1Dificultad) {
+      filtros['dificultad'] = this.r1Dificultad;
+    }
+    if (this.reporteActivo === 'R2') {
+      if (this.fechaDesde) filtros['desde'] = this.fechaDesde;
+      if (this.fechaHasta) filtros['hasta'] = this.fechaHasta;
+    }
+    if (this.reporteActivo === 'R5') {
+      if (this.fechaDesde) filtros['desde'] = this.fechaDesde;
+      if (this.fechaHasta) filtros['hasta'] = this.fechaHasta;
+      if (this.r5Minimo) filtros['minimo'] = this.r5Minimo;
+    }
+    if (this.reporteActivo === 'R9') {
+      if (this.fechaDesde) filtros['desde'] = this.fechaDesde;
+      if (this.fechaHasta) filtros['hasta'] = this.fechaHasta;
+    }
+
+    this.reportesService.descargarPdf(this.reporteActivo, filtros).subscribe({
       next: (blob) => {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');

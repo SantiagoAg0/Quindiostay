@@ -8,5 +8,11 @@ public record TourResumen(
         String nombre,
         BigDecimal duracionHoras,
         Dificultad dificultad,
-        BigDecimal precioPersona
-) {}
+        BigDecimal precioPersona,
+        Long idPrestador,
+        String nombrePrestador
+) {
+    public TourResumen(Long idTour, String nombre, BigDecimal duracionHoras, Dificultad dificultad, BigDecimal precioPersona) {
+        this(idTour, nombre, duracionHoras, dificultad, precioPersona, null, null);
+    }
+}

@@ -8,11 +8,13 @@ import co.edu.uniquindio.quindiostay.domain.enums.*;
 import co.edu.uniquindio.quindiostay.dto.reservas.CrearReservaRequest;
 import co.edu.uniquindio.quindiostay.dto.reservas.ParticipanteDto;
 import co.edu.uniquindio.quindiostay.dto.reservas.ReservaDetalleDto;
+import co.edu.uniquindio.quindiostay.exception.ConflictoException;
 import co.edu.uniquindio.quindiostay.exception.RecursoNoEncontradoException;
 import co.edu.uniquindio.quindiostay.exception.ReglaNegocioException;
 import co.edu.uniquindio.quindiostay.repository.*;
 import co.edu.uniquindio.quindiostay.security.UsuarioPrincipal;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -98,11 +100,48 @@ public class ReservaService {
         Cliente cliente = clienteRepository.findById(idClienteFinal)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Cliente", idClienteFinal));
 
+        CanalReserva canal = request.canal() != null ? request.canal() : CanalReserva.WEB;
+
         // D16: Reserva por canal WEB o APP_MOVIL exige perfil creado
-        if (request.canal() == CanalReserva.WEB || request.canal() == CanalReserva.APP_MOVIL) {
+        if (canal == CanalReserva.WEB || canal == CanalReserva.APP_MOVIL) {
             if (!perfilClienteRepository.existsById(idClienteFinal)) {
                 throw new ReglaNegocioException("D16: Para reservar por canal web o app movil el cliente debe tener una cuenta y perfil activos");
             }
+        }
+
+        // RF04: Reserva de solo plan (sin salida/tour) desde el personal
+        if (request.idSalida() == null) {
+            if (request.idPlan() == null) {
+                throw new ReglaNegocioException("Para reservar solo plan debe seleccionar un plan");
+            }
+            Plan plan = planRepository.findById(request.idPlan())
+                    .orElseThrow(() -> new RecursoNoEncontradoException("Plan", request.idPlan()));
+
+            if (plan.getEstado() != EstadoPlan.ACTIVO) {
+                throw new ReglaNegocioException("RN02: El plan seleccionado debe estar en estado ACTIVO");
+            }
+
+            LocalDate fechaServicio = request.fechaServicio() != null ? request.fechaServicio() : (plan.getFechaInicio().isAfter(LocalDate.now()) ? plan.getFechaInicio() : LocalDate.now());
+            if (fechaServicio.isBefore(plan.getFechaInicio()) || fechaServicio.isAfter(plan.getFechaFin())) {
+                throw new ReglaNegocioException("RN02: La fecha de servicio (" + fechaServicio + ") no está dentro del periodo de vigencia del plan (" + plan.getFechaInicio() + " a " + plan.getFechaFin() + ")");
+            }
+
+            int numParticipantes = (request.participantes() != null && !request.participantes().isEmpty())
+                    ? request.participantes().size() : 1;
+            BigDecimal precioPlan = plan.getPrecio() != null ? plan.getPrecio() : BigDecimal.ZERO;
+            BigDecimal valorTotal = precioPlan.multiply(BigDecimal.valueOf(numParticipantes));
+
+            Reserva reserva = new Reserva();
+            reserva.setFechaCreacion(LocalDate.now());
+            reserva.setFechaServicio(fechaServicio);
+            reserva.setEstado(EstadoReserva.PENDIENTE);
+            reserva.setValorTotal(valorTotal);
+            reserva.setCanal(canal);
+            reserva.setCliente(cliente);
+            reserva.setPlan(plan);
+            reserva = reservaRepository.save(reserva);
+
+            return convertirADto(reserva);
         }
 
         // 2. Obtener salida
@@ -114,24 +153,44 @@ public class ReservaService {
             throw new ReglaNegocioException("RN04: Solo se pueden reservar salidas en estado PROGRAMADA");
         }
 
-        // 3. Obtener plan
-        Plan plan = planRepository.findById(request.idPlan())
-                .orElseThrow(() -> new RecursoNoEncontradoException("Plan", request.idPlan()));
+        Long idOperador = salida.getTour().getPrestador().getIdPrestador();
+        Plan plan;
+        if (request.idPlan() == null) {
+            // Deducción automática si hay exactamente un plan vigente del operador
+            List<Plan> planesOperador = planRepository.findByPrestadorIdPrestador(idOperador).stream()
+                    .filter(p -> p.getEstado() == EstadoPlan.ACTIVO &&
+                            !salida.getFecha().isBefore(p.getFechaInicio()) &&
+                            !salida.getFecha().isAfter(p.getFechaFin()))
+                    .toList();
+            if (planesOperador.size() == 1) {
+                plan = planesOperador.get(0);
+            } else if (planesOperador.isEmpty()) {
+                throw new ReglaNegocioException("El operador de este tour no cuenta con planes vigentes para esta salida");
+            } else {
+                throw new ReglaNegocioException("Este operador cuenta con varios planes disponibles; debe seleccionar uno.");
+            }
+        } else {
+            plan = planRepository.findById(request.idPlan())
+                    .orElseThrow(() -> new RecursoNoEncontradoException("Plan", request.idPlan()));
 
-        // RN02: El plan debe estar ACTIVO y la fecha de servicio dentro de su vigencia
-        if (plan.getEstado() != EstadoPlan.ACTIVO) {
-            throw new ReglaNegocioException("RN02: El plan seleccionado debe estar en estado ACTIVO");
-        }
-        if (salida.getFecha().isBefore(plan.getFechaInicio()) || salida.getFecha().isAfter(plan.getFechaFin())) {
-            throw new ReglaNegocioException("RN02: La fecha de la salida (" + salida.getFecha() + ") no esta dentro del periodo de vigencia del plan (" + plan.getFechaInicio() + " a " + plan.getFechaFin() + ")");
-        }
+            // RN02: El plan debe estar ACTIVO y la fecha de servicio dentro de su vigencia
+            if (plan.getEstado() != EstadoPlan.ACTIVO) {
+                throw new ReglaNegocioException("RN02: El plan seleccionado debe estar en estado ACTIVO");
+            }
+            if (salida.getFecha().isBefore(plan.getFechaInicio()) || salida.getFecha().isAfter(plan.getFechaFin())) {
+                throw new ReglaNegocioException("RN02: La fecha de la salida (" + salida.getFecha() + ") no esta dentro del periodo de vigencia del plan (" + plan.getFechaInicio() + " a " + plan.getFechaFin() + ")");
+            }
 
-        // RN02: El plan debe pertenecer al prestador que publica el tour
-        if (!plan.getPrestador().getIdPrestador().equals(salida.getTour().getPrestador().getIdPrestador())) {
-            throw new ReglaNegocioException("RN02: El plan seleccionado debe pertenecer al prestador del tour (" + salida.getTour().getPrestador().getNombreComercial() + ")");
+            // RN02: El plan debe pertenecer al prestador que publica el tour
+            if (!plan.getPrestador().getIdPrestador().equals(idOperador)) {
+                throw new ReglaNegocioException("RN02: El plan seleccionado debe pertenecer al prestador del tour (" + salida.getTour().getPrestador().getNombreComercial() + ")");
+            }
         }
 
         // 4. Validar participantes y cupos (RN06)
+        if (request.participantes() == null || request.participantes().isEmpty()) {
+            throw new ReglaNegocioException("Debe registrar al menos un participante para la reserva");
+        }
         int numParticipantes = request.participantes().size();
         long participantesOcupados = salidaTourRepository.contarParticipantes(salida.getIdSalida());
         if (participantesOcupados + numParticipantes > salida.getCupo()) {
@@ -169,7 +228,7 @@ public class ReservaService {
         reserva.setFechaServicio(salida.getFecha());
         reserva.setEstado(EstadoReserva.PENDIENTE);
         reserva.setValorTotal(valorTotal);
-        reserva.setCanal(request.canal());
+        reserva.setCanal(canal);
         reserva.setCliente(cliente);
         reserva.setPlan(plan);
         reserva = reservaRepository.save(reserva);
@@ -267,6 +326,100 @@ public class ReservaService {
         notificacionRepository.save(notif);
 
         return convertirADto(reserva);
+    }
+
+    @Transactional
+    public ReservaDetalleDto modificar(Long idReserva, List<ParticipanteDto> nuevosParticipantes) {
+        Reserva reserva = reservaRepository.findById(idReserva)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Reserva", idReserva));
+
+        if (reserva.getEstado() != EstadoReserva.PENDIENTE) {
+            throw new ReglaNegocioException("Solo se pueden modificar reservas en estado PENDIENTE");
+        }
+
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getPrincipal() instanceof UsuarioPrincipal principal) {
+            if ("CLIENTE".equalsIgnoreCase(principal.getRol())) {
+                if (!reserva.getCliente().getIdCliente().equals(principal.getId())) {
+                    throw new AccessDeniedException("No tiene permisos para modificar esta reserva");
+                }
+            }
+        }
+
+        var reservaTourOpt = reservaTourRepository.findById(idReserva);
+        if (reservaTourOpt.isPresent() && nuevosParticipantes != null && !nuevosParticipantes.isEmpty()) {
+            var rt = reservaTourOpt.get();
+            var salida = rt.getSalida();
+
+            // Validar cupo
+            long otrosOcupados = salidaTourRepository.contarParticipantes(salida.getIdSalida())
+                    - participanteRepository.findByReservaTourIdReserva(idReserva).size();
+            if (otrosOcupados + nuevosParticipantes.size() > salida.getCupo()) {
+                throw new ReglaNegocioException("RN06: Cupo insuficiente. Disponibles: " + (salida.getCupo() - otrosOcupados) + ", solicitados: " + nuevosParticipantes.size());
+            }
+
+            // Validar edades
+            short edadMinimaTour = salida.getTour().getEdadMinima();
+            boolean hayMenor = false;
+            boolean hayAdulto = false;
+            for (ParticipanteDto p : nuevosParticipantes) {
+                if (p.edad() < edadMinimaTour) {
+                    throw new ReglaNegocioException("RN05: El participante " + p.nombre() + " tiene " + p.edad() + " anios, pero el tour exige minimo " + edadMinimaTour + " anios");
+                }
+                if (p.edad() < 18) hayMenor = true;
+                else hayAdulto = true;
+            }
+            if (hayMenor && !hayAdulto) {
+                throw new ReglaNegocioException("RN14: Todo participante menor de edad debe viajar acompaniado de al menos un adulto en la misma reserva");
+            }
+
+            // D17: Recalcular valor_total = numParticipantes * precio_persona
+            BigDecimal precioPersona = rt.getPrecioPersonaAplicado() != null ? rt.getPrecioPersonaAplicado() : salida.getTour().getPrecioPersona();
+            BigDecimal nuevoValorTotal = precioPersona.multiply(BigDecimal.valueOf(nuevosParticipantes.size()));
+            reserva.setValorTotal(nuevoValorTotal);
+            reservaRepository.save(reserva);
+
+            // Reemplazar participantes
+            participanteRepository.deleteByReservaTourIdReserva(idReserva);
+            for (ParticipanteDto p : nuevosParticipantes) {
+                Participante part = new Participante();
+                part.setNombre(p.nombre());
+                part.setEdad(p.edad());
+                part.setReservaTour(rt);
+                participanteRepository.save(part);
+            }
+        }
+
+        return convertirADto(reserva);
+    }
+
+    @Transactional
+    public void eliminar(Long idReserva) {
+        Reserva reserva = reservaRepository.findById(idReserva)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Reserva", idReserva));
+
+        if (reserva.getEstado() != EstadoReserva.PENDIENTE) {
+            throw new ReglaNegocioException("Solo se pueden eliminar reservas en estado PENDIENTE");
+        }
+
+        long pagosCount = pagoRepository.countByReservaIdReserva(idReserva);
+        if (pagosCount > 0) {
+            throw new ConflictoException("No se puede eliminar la reserva porque tiene pagos registrados. Si lo desea, cancele la reserva.");
+        }
+
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getPrincipal() instanceof UsuarioPrincipal principal) {
+            if ("CLIENTE".equalsIgnoreCase(principal.getRol())) {
+                if (!reserva.getCliente().getIdCliente().equals(principal.getId())) {
+                    throw new AccessDeniedException("No tiene permisos para eliminar esta reserva");
+                }
+            }
+        }
+
+        participanteRepository.deleteByReservaTourIdReserva(idReserva);
+        reservaTourRepository.deleteById(idReserva);
+        notificacionRepository.deleteByReservaIdReserva(idReserva);
+        reservaRepository.delete(reserva);
     }
 
     @Transactional

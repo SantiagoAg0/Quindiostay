@@ -8,6 +8,10 @@ import java.util.Optional;
 public interface ClienteRepository extends JpaRepository<Cliente, Long> {
     Optional<Cliente> findByCorreo(String correo);
 
+    Optional<Cliente> findByCorreoIgnoreCase(String correo);
+
+    boolean existsByCorreo(String correo);
+
     Optional<Cliente> findByTipoDocumentoAndNumeroDocumento(TipoDocumento tipoDocumento, String numeroDocumento);
 
     boolean existsByTipoDocumentoAndNumeroDocumento(TipoDocumento tipoDocumento, String numeroDocumento);

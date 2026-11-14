@@ -11,6 +11,8 @@ import java.util.List;
 public interface PagoRepository extends JpaRepository<Pago, Long> {
     List<Pago> findByReservaIdReserva(Long idReserva);
 
+    long countByReservaIdReserva(Long idReserva);
+
     List<Pago> findByReservaClienteIdCliente(Long idCliente);
 
     List<Pago> findByEstado(EstadoPago estado);

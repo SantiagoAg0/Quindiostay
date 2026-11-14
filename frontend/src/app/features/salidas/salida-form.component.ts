@@ -110,7 +110,7 @@ import { IdiomaResumen } from '../../core/models/idioma.model';
       position: fixed;
       inset: 0;
       background: rgba(10, 20, 15, 0.65);
-      z-index: 1050;
+      z-index: 2500;
       backdrop-filter: blur(4px);
     }
     .drawer-content {
@@ -122,8 +122,8 @@ import { IdiomaResumen } from '../../core/models/idioma.model';
       max-width: 100vw;
       height: 100vh;
       height: 100dvh;
-      background: var(--white);
-      z-index: 1060;
+      background: #ffffff;
+      z-index: 2600;
       display: flex;
       flex-direction: column;
       box-shadow: -10px 0 35px rgba(0, 0, 0, 0.25);
@@ -209,35 +209,38 @@ import { IdiomaResumen } from '../../core/models/idioma.model';
     .drawer-actions {
       margin-top: auto;
       padding-top: 18px;
-      padding-bottom: 6px;
-      border-top: 1px solid var(--line);
+      padding-bottom: 12px;
+      border-top: 1px solid #e2e8f0;
       display: flex;
       justify-content: flex-end;
       gap: 12px;
       position: sticky;
       bottom: 0;
-      background: var(--white);
-      z-index: 10;
+      background: #ffffff;
+      z-index: 20;
     }
     .btn-cancel {
       padding: 10px 18px;
-      background: var(--white);
-      border: 1px solid var(--line);
+      background: #ffffff;
+      color: #334155;
+      border: 1px solid #cbd5e1;
       border-radius: 10px;
       font-weight: 600;
       cursor: pointer;
       font-family: inherit;
+      &:hover { background: #f8fafc; }
     }
     .btn-submit {
       padding: 10px 20px;
-      background: var(--green);
-      color: var(--white);
+      background: #10b981;
+      color: #ffffff;
       border: none;
       border-radius: 10px;
       font-weight: 600;
       cursor: pointer;
       font-family: inherit;
-      &:hover:not(:disabled) { background: #156637; }
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+      &:hover:not(:disabled) { background: #059669; }
       &:disabled { opacity: 0.6; cursor: not-allowed; }
     }
   `]

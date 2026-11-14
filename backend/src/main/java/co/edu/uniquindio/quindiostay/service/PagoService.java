@@ -6,6 +6,7 @@ import co.edu.uniquindio.quindiostay.domain.entity.nucleo.Reserva;
 import co.edu.uniquindio.quindiostay.domain.enums.*;
 import co.edu.uniquindio.quindiostay.dto.pagos.CrearPagoRequest;
 import co.edu.uniquindio.quindiostay.dto.pagos.PagoDetalleDto;
+import co.edu.uniquindio.quindiostay.exception.ConflictoException;
 import co.edu.uniquindio.quindiostay.exception.RecursoNoEncontradoException;
 import co.edu.uniquindio.quindiostay.exception.ReglaNegocioException;
 import co.edu.uniquindio.quindiostay.repository.NotificacionRepository;
@@ -14,6 +15,7 @@ import co.edu.uniquindio.quindiostay.repository.ReservaRepository;
 import co.edu.uniquindio.quindiostay.repository.ReservaTourRepository;
 import lombok.RequiredArgsConstructor;
 import co.edu.uniquindio.quindiostay.security.UsuarioPrincipal;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -80,6 +82,15 @@ public class PagoService {
     public PagoDetalleDto registrarPago(CrearPagoRequest request) {
         Reserva reserva = reservaRepository.findById(request.idReserva())
                 .orElseThrow(() -> new RecursoNoEncontradoException("Reserva", request.idReserva()));
+
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getPrincipal() instanceof UsuarioPrincipal principal) {
+            if ("CLIENTE".equalsIgnoreCase(principal.getRol())) {
+                if (!reserva.getCliente().getIdCliente().equals(principal.getId())) {
+                    throw new AccessDeniedException("No tiene permisos para registrar pagos en reservas de otros clientes");
+                }
+            }
+        }
 
         if (reserva.getEstado() == EstadoReserva.CANCELADA) {
             throw new ReglaNegocioException("No se pueden registrar pagos para una reserva CANCELADA");
@@ -182,6 +193,60 @@ public class PagoService {
         reembolso = pagoRepository.save(reembolso);
 
         return convertirADto(reembolso);
+    }
+
+    @Transactional(readOnly = true)
+    public PagoDetalleDto obtenerPorId(Long idPago) {
+        Pago pago = pagoRepository.findById(idPago)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Pago", idPago));
+
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getPrincipal() instanceof UsuarioPrincipal principal) {
+            if ("CLIENTE".equalsIgnoreCase(principal.getRol())) {
+                if (pago.getReserva() == null || pago.getReserva().getCliente() == null
+                        || !pago.getReserva().getCliente().getIdCliente().equals(principal.getId())) {
+                    throw new AccessDeniedException("No tiene permisos para consultar este pago");
+                }
+            } else if ("ENCARGADO_PRESTADOR".equalsIgnoreCase(principal.getRol()) && principal.getIdPrestador() != null) {
+                if (pago.getReserva() == null || pago.getReserva().getPlan() == null
+                        || !pago.getReserva().getPlan().getPrestador().getIdPrestador().equals(principal.getIdPrestador())) {
+                    throw new AccessDeniedException("No tiene permisos para consultar pagos de otro prestador");
+                }
+            }
+        }
+        return convertirADto(pago);
+    }
+
+    @Transactional
+    public PagoDetalleDto modificar(Long idPago, EstadoPago nuevoEstado, String observacion) {
+        Pago pago = pagoRepository.findById(idPago)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Pago", idPago));
+
+        if (pago.getEstado() == EstadoPago.REEMBOLSADO) {
+            throw new ReglaNegocioException("No se puede modificar un pago en estado REEMBOLSADO");
+        }
+        if (nuevoEstado != null && nuevoEstado == EstadoPago.REEMBOLSADO) {
+            throw new ReglaNegocioException("Para reembolsar un pago utilice la acción de Reembolsar");
+        }
+        if (nuevoEstado != null) {
+            pago.setEstado(nuevoEstado);
+        }
+        if (observacion != null && !observacion.isBlank()) {
+            pago.setReferenciaTransaccion(observacion);
+        }
+        pago = pagoRepository.save(pago);
+        return convertirADto(pago);
+    }
+
+    @Transactional
+    public void eliminar(Long idPago) {
+        Pago pago = pagoRepository.findById(idPago)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Pago", idPago));
+
+        if (pago.getEstado() == EstadoPago.EXITOSO) {
+            throw new ConflictoException("No se puede eliminar un pago con estado EXITOSO");
+        }
+        pagoRepository.delete(pago);
     }
 
     private PagoDetalleDto convertirADto(Pago p) {
