@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ClientesService } from './clientes.service';
 import { AuthService } from '../../core/auth/auth.service';
+import { PlantillasService } from '../../core/services/plantillas.service';
 import { ClienteDto, ActualizarPerfilRequest } from '../../core/models/cliente.model';
 import { IconComponent } from '../../shared/icon/icon.component';
 import { TablaVaciaComponent } from '../../shared/tabla-vacia/tabla-vacia.component';
@@ -105,6 +106,10 @@ import { TablaVaciaComponent } from '../../shared/tabla-vacia/tabla-vacia.compon
             </div>
 
             <div class="form-actions">
+              <button type="button" class="btn btn-secondary" *ngIf="perfilCliente" (click)="plantillasService.descargar('/api/plantillas/datos-personales/' + perfilCliente.idCliente, 'Tratamiento_Datos_' + perfilCliente.idCliente + '.pdf')" title="Descargar Consentimiento de Datos">
+                <app-icon name="file-text" [size]="16"></app-icon>
+                <span>Autorización de Datos Personales</span>
+              </button>
               <button type="submit" class="btn btn-primary" [disabled]="formPerfil.invalid || guardando">
                 <app-icon name="check" [size]="16"></app-icon>
                 <span>{{ guardando ? 'Guardando...' : 'Actualizar Preferencias' }}</span>
@@ -207,6 +212,9 @@ import { TablaVaciaComponent } from '../../shared/tabla-vacia/tabla-vacia.compon
                     <span class="anticipacion-tag">{{ c.anticipacionDias || 1 }} d</span>
                   </td>
                   <td class="actions-col">
+                    <button type="button" class="action-btn pdf-btn" (click)="plantillasService.descargar('/api/plantillas/datos-personales/' + c.idCliente, 'Tratamiento_Datos_' + c.idCliente + '.pdf')" title="Descargar Autorización de Datos Personales (PDF)">
+                      <app-icon name="file-text" [size]="14"></app-icon>
+                    </button>
                     <button class="action-btn edit" (click)="abrirModalEditar(c)" title="Editar preferencias">
                       <app-icon name="edit" [size]="14"></app-icon>
                     </button>
@@ -690,6 +698,12 @@ import { TablaVaciaComponent } from '../../shared/tabla-vacia/tabla-vacia.compon
         color: #059669;
         border-color: rgba(16, 185, 129, 0.3);
       }
+
+      &.pdf-btn:hover {
+        background: rgba(59, 130, 246, 0.1);
+        color: #2563eb;
+        border-color: rgba(59, 130, 246, 0.3);
+      }
     }
 
     /* Modal */
@@ -786,6 +800,7 @@ import { TablaVaciaComponent } from '../../shared/tabla-vacia/tabla-vacia.compon
   `]
 })
 export class ClientesListaComponent implements OnInit {
+  public plantillasService = inject(PlantillasService);
   private clientesService = inject(ClientesService);
   private authService = inject(AuthService);
   private fb = inject(FormBuilder);

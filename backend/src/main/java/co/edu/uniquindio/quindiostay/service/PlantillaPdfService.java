@@ -5,6 +5,7 @@ import co.edu.uniquindio.quindiostay.domain.entity.nucleo.Pago;
 import co.edu.uniquindio.quindiostay.domain.entity.nucleo.Reserva;
 import co.edu.uniquindio.quindiostay.domain.entity.tours.Participante;
 import co.edu.uniquindio.quindiostay.domain.entity.tours.ReservaTour;
+import co.edu.uniquindio.quindiostay.domain.enums.EstadoPago;
 import co.edu.uniquindio.quindiostay.exception.RecursoNoEncontradoException;
 import co.edu.uniquindio.quindiostay.exception.ReglaNegocioException;
 import co.edu.uniquindio.quindiostay.repository.*;
@@ -12,6 +13,7 @@ import co.edu.uniquindio.quindiostay.security.UsuarioPrincipal;
 import com.lowagie.text.*;
 import com.lowagie.text.pdf.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -141,6 +143,102 @@ public class PlantillaPdfService {
             doc.close();
         } catch (Exception e) {
             throw new RuntimeException("Error al generar PDF de pago: " + e.getMessage(), e);
+        }
+        return baos.toByteArray();
+    }
+
+    @Transactional(readOnly = true)
+    public byte[] generarFacturaReserva(Long idReserva) {
+        Reserva reserva = reservaRepository.findById(idReserva)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Reserva", idReserva));
+        validarAccesoCliente(reserva.getCliente().getIdCliente());
+
+        var reservaTourOpt = reservaTourRepository.findById(idReserva);
+        List<Pago> pagos = pagoRepository.findByReservaIdReserva(idReserva);
+        List<Pago> pagosExitosos = pagos.stream().filter(p -> p.getEstado() == EstadoPago.EXITOSO).toList();
+        java.math.BigDecimal totalPagado = pagosExitosos.stream()
+                .map(Pago::getMonto)
+                .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+        java.math.BigDecimal saldo = reserva.getValorTotal().subtract(totalPagado).max(java.math.BigDecimal.ZERO);
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        Document doc = new Document(PageSize.A4, 36, 36, 40, 40);
+
+        try {
+            PdfWriter.getInstance(doc, baos);
+            doc.open();
+            agregarEncabezado(doc, "FACTURA DE VENTA / CUENTA DE COBRO", "Factura No: FACT-RES-" + String.format("%05d", idReserva));
+
+            PdfPTable tInfo = new PdfPTable(2);
+            tInfo.setWidthPercentage(100);
+            tInfo.setSpacingBefore(10);
+            tInfo.setSpacingAfter(15);
+
+            agregarCeldaClaveValor(tInfo, "Número de Factura:", "FACT-RES-" + String.format("%05d", idReserva));
+            agregarCeldaClaveValor(tInfo, "Fecha de Emisión:", LocalDate.now().toString());
+            agregarCeldaClaveValor(tInfo, "Cliente / Adquirente:", reserva.getCliente().getNombres() + " " + reserva.getCliente().getApellidos());
+            agregarCeldaClaveValor(tInfo, "Identificación / Correo:", reserva.getCliente().getTipoDocumento() + " " + reserva.getCliente().getNumeroDocumento() + " | " + reserva.getCliente().getCorreo());
+            agregarCeldaClaveValor(tInfo, "Fecha de Servicio:", reserva.getFechaServicio().toString());
+            agregarCeldaClaveValor(tInfo, "Estado de Reserva:", reserva.getEstado().name());
+
+            if (reservaTourOpt.isPresent()) {
+                var salida = reservaTourOpt.get().getSalida();
+                agregarCeldaClaveValor(tInfo, "Actividad / Tour:", salida.getTour().getNombre());
+                agregarCeldaClaveValor(tInfo, "Prestador Operador:", salida.getTour().getPrestador().getNombreComercial());
+            }
+            if (reserva.getPlan() != null) {
+                agregarCeldaClaveValor(tInfo, "Plan Adquirido:", reserva.getPlan().getNombre());
+            }
+
+            doc.add(tInfo);
+
+            Paragraph pPagos = new Paragraph("DETALLE DE PAGOS REGISTRADOS", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11, VERDE_BOSQUE));
+            pPagos.setSpacingBefore(10);
+            pPagos.setSpacingAfter(6);
+            doc.add(pPagos);
+
+            PdfPTable tPagos = new PdfPTable(5);
+            tPagos.setWidthPercentage(100);
+            tPagos.setWidths(new float[]{1.5f, 2.5f, 2f, 3f, 2.5f});
+            agregarEncabezadoTabla(tPagos, List.of("# Recibo", "Fecha y Hora", "Método", "Referencia", "Monto"));
+
+            if (pagosExitosos.isEmpty()) {
+                PdfPCell cVacia = new PdfPCell(new Phrase("No se registran pagos exitosos a la fecha", FontFactory.getFont(FontFactory.HELVETICA_OBLIQUE, 9, Color.GRAY)));
+                cVacia.setColspan(5);
+                cVacia.setPadding(8);
+                cVacia.setHorizontalAlignment(Element.ALIGN_CENTER);
+                cVacia.setBorderColor(GRIS_BORDE);
+                tPagos.addCell(cVacia);
+            } else {
+                boolean alt = false;
+                for (Pago p : pagosExitosos) {
+                    tPagos.addCell(crearCeldaDato("PAG-" + p.getIdPago(), alt));
+                    tPagos.addCell(crearCeldaDato(p.getFechaPago().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")), alt));
+                    tPagos.addCell(crearCeldaDato(p.getMetodo().name(), alt));
+                    tPagos.addCell(crearCeldaDato(p.getReferenciaTransaccion() != null ? p.getReferenciaTransaccion() : "N/A", alt));
+                    tPagos.addCell(crearCeldaDato("$ " + String.format("%,.2f", p.getMonto()), alt));
+                    alt = !alt;
+                }
+            }
+            doc.add(tPagos);
+
+            Paragraph pResumen = new Paragraph("LIQUIDACIÓN Y SALDO", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11, VERDE_BOSQUE));
+            pResumen.setSpacingBefore(12);
+            pResumen.setSpacingAfter(6);
+            doc.add(pResumen);
+
+            PdfPTable tTotales = new PdfPTable(2);
+            tTotales.setWidthPercentage(60);
+            tTotales.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            agregarCeldaClaveValor(tTotales, "Valor Total Liquidado:", "$ " + String.format("%,.2f", reserva.getValorTotal()));
+            agregarCeldaClaveValor(tTotales, "Total Pagado (Exitoso):", "$ " + String.format("%,.2f", totalPagado));
+            agregarCeldaClaveValor(tTotales, "Saldo Pendiente:", "$ " + String.format("%,.2f", saldo));
+            doc.add(tTotales);
+
+            agregarPieLegal(doc, "Factura válida de conformidad con la reglamentación turística comercial. QuindíoStay - Experiencias Turísticas del Quindío.");
+            doc.close();
+        } catch (Exception e) {
+            throw new RuntimeException("Error al generar Factura de reserva: " + e.getMessage(), e);
         }
         return baos.toByteArray();
     }
@@ -338,7 +436,7 @@ public class PlantillaPdfService {
         if (auth != null && auth.getPrincipal() instanceof UsuarioPrincipal principal) {
             if ("CLIENTE".equalsIgnoreCase(principal.getRol())) {
                 if (!principal.getId().equals(idClienteDoc)) {
-                    throw new ReglaNegocioException("No tiene permisos para descargar documentos de otro usuario");
+                    throw new AccessDeniedException("No tiene permisos para descargar documentos de otro usuario");
                 }
             }
         }

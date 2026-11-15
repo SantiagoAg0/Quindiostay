@@ -167,8 +167,17 @@ El sistema implementa un control de acceso basado en roles (RBAC) con tokens JWT
 - Reserva asistida (el operador y planes disponibles se ligan de manera automática a la salida elegida).
 - Consulta exclusiva de sus propias reservas, historial de pagos, comprobantes descargables en PDF y gestión de preferencias de notificación.
 
+### Cuentas de Prueba por Rol
+
+| Rol del Sistema | Nombre de Usuario / Correo | Alcance / Función |
+|---|---|---|
+| `ADMINISTRADOR_PLATAFORMA` | `admin` | Administración integral de plataforma, usuarios y catálogos maestros |
+| `OPERADOR` | `operador`, `operador2` | Operación turística, salidas, asignación de guías y recaudo en mostrador |
+| `ENCARGADO_PRESTADOR` | `enc_cocora`, `enc_viajescafe`, `enc_rutas`, `enc_quindioexp`, `enc_aves` | Gestión de planes y consulta operativa de su respectivo prestador |
+| `CLIENTE` | `carlos.fernandez@yahoo.com`, `emily.johnson@hotmail.com`, `lucas.muller@gmail.com`, `sofia.martinez@outlook.com` | Reserva de salidas, registro de participantes y consulta de pagos |
+
 > **Nota para Evaluadores y Pruebas**:  
-> Los usuarios y credenciales iniciales para pruebas en entornos de laboratorio provienen directamente del script `database/02_datos.sql`. Por políticas de seguridad y buenas prácticas de entrega, no se almacenan contraseñas en texto plano dentro del repositorio ni en este manual.
+> Los usuarios de prueba provienen de `database/02_datos.sql`. Por políticas de seguridad, no se incluyen contraseñas en texto plano en este archivo; para consultar las claves de acceso de los entornos de prueba, remítase a [`database/README.md`](database/README.md).
 
 ---
 
@@ -192,16 +201,16 @@ El sistema implementa un control de acceso basado en roles (RBAC) con tokens JWT
 
 Todos los reportes están implementados mediante consultas SQL nativas de alto rendimiento (`JdbcTemplate`) y permiten exportación en formato PDF aplicando los mismos filtros definidos en pantalla:
 
-1. **R1**: Salidas por Tour y Rango de Fechas (Ocupación y Recaudo).
-2. **R2**: Estado de Reservas y Recaudo por Período.
-3. **R3**: Balance de Pagos por Método y Estado de Transacción.
-4. **R4**: Consolidado de Reservas por Municipio del Quindío.
-5. **R5**: Productividad y Horas de Guianza de Guías Acreditados.
-6. **R6**: Top Tours con Mayor Tasa de Ocupación (Tabla Derivada).
-7. **R7**: Historial de Notificaciones Enviadas por Canal.
-8. **R8**: Guías Bilingües con Mayor Número de Salidas Programadas (`HAVING`).
-9. **R9**: Tours que Nunca Han Tenido Cancelaciones de Salida (`NOT EXISTS`).
-10. **R10**: Clientes con Gasto Superior al Promedio General de la Plataforma (Subconsulta Escalar en `HAVING`).
+- **R1**: Catálogo de tours por dificultad y precio (simple)
+- **R2**: Salidas programadas próximas (simple)
+- **R3**: Pagos fallidos y pendientes (simple)
+- **R4**: Tours con más participantes por mes (intermedio, gráfico de barras)
+- **R5**: Guías con más salidas realizadas (intermedio, GROUP BY + HAVING)
+- **R6**: Ocupación promedio por categoría de tour (avanzado, subconsulta en el FROM, gráfico de barras)
+- **R7**: Ingresos mensuales por método de pago (intermedio, gráfico de líneas)
+- **R8**: Prestadores con más cancelaciones (intermedio, GROUP BY + HAVING)
+- **R9**: Guías sin salidas en un periodo (avanzado, NOT EXISTS)
+- **R10**: Clientes de alto gasto que aceptan promociones (avanzado, subconsulta escalar en el HAVING)
 
 ---
 

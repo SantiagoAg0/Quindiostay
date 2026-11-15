@@ -102,7 +102,7 @@ import { PlantillasService } from '../../core/services/plantillas.service';
                 <th>Referencia</th>
                 <th>Fecha y Hora</th>
                 <th>Estado</th>
-                <th class="actions-col">Comprobante</th>
+                <th class="actions-col">Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -140,12 +140,29 @@ import { PlantillasService } from '../../core/services/plantillas.service';
                     <button type="button" (click)="plantillasService.descargar('/api/plantillas/pago/' + p.idPago, 'recibo-pago-' + p.idPago + '.pdf')" class="action-btn pdf-btn" title="Descargar Recibo de Pago (PDF)">
                       <app-icon name="file-text" [size]="14"></app-icon>
                     </button>
+                    <button type="button" (click)="plantillasService.descargar('/api/plantillas/factura/' + p.idReserva, 'factura-reserva-' + p.idReserva + '.pdf')" class="action-btn invoice-btn" title="Descargar Factura de Reserva (PDF)">
+                      <app-icon name="dollar-sign" [size]="14"></app-icon>
+                    </button>
                     <button
                       *ngIf="!authService.esCliente() && p.estado === 'EXITOSO'"
                       class="action-btn refund"
                       (click)="confirmarReembolso(p)"
                       title="Emitir reembolso">
                       <app-icon name="refresh" [size]="14"></app-icon>
+                    </button>
+                    <button
+                      *ngIf="authService.esAdmin() || authService.esOperador()"
+                      class="action-btn edit"
+                      (click)="abrirModalEditar(p)"
+                      title="Editar pago (estado y observación)">
+                      <app-icon name="edit" [size]="14"></app-icon>
+                    </button>
+                    <button
+                      *ngIf="(authService.esAdmin() || authService.esOperador()) && p.estado !== 'EXITOSO'"
+                      class="action-btn delete"
+                      (click)="confirmarEliminar(p)"
+                      title="Eliminar transacción">
+                      <app-icon name="trash" [size]="14"></app-icon>
                     </button>
                   </div>
                 </td>
@@ -247,6 +264,57 @@ import { PlantillasService } from '../../core/services/plantillas.service';
               <button type="submit" class="btn btn-primary" [disabled]="form.invalid || guardando">
                 <app-icon name="check" [size]="16"></app-icon>
                 <span>{{ guardando ? 'Registrando...' : 'Confirmar Pago' }}</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- MODAL EDITAR PAGO -->
+      <div class="modal-backdrop" *ngIf="mostrarModalEditar" (click)="cerrarModalEditar()">
+        <div class="modal-dialog" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <div>
+              <h3 class="modal-title">Editar Transacción #PAG-{{ pagoAEditar?.idPago }}</h3>
+              <p class="modal-subtitle">Actualizar estado administrativo y observaciones contables</p>
+            </div>
+            <button class="close-btn" (click)="cerrarModalEditar()">
+              <app-icon name="x" [size]="18"></app-icon>
+            </button>
+          </div>
+
+          <form [formGroup]="formEditar" (ngSubmit)="guardarEdicionPago()" class="modal-body">
+            <div class="form-group">
+              <label class="form-label">Estado de la Transacción <span class="req">*</span></label>
+              <select formControlName="estado" class="form-control">
+                <option value="PENDIENTE">PENDIENTE</option>
+                <option value="EXITOSO">EXITOSO</option>
+                <option value="FALLIDO">FALLIDO</option>
+                <option value="REEMBOLSADO">REEMBOLSADO</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Observación / Nota Administrativa</label>
+              <textarea
+                formControlName="observacion"
+                class="form-control"
+                rows="3"
+                placeholder="Indique motivo o soporte de la modificación..."></textarea>
+            </div>
+
+            <div *ngIf="errorEdicion" class="error-alert">
+              <app-icon name="alert" [size]="16"></app-icon>
+              <span>{{ errorEdicion }}</span>
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" (click)="cerrarModalEditar()">
+                Cancelar
+              </button>
+              <button type="submit" class="btn btn-primary" [disabled]="formEditar.invalid || guardandoEdicion">
+                <app-icon name="check" [size]="16"></app-icon>
+                <span>{{ guardandoEdicion ? 'Actualizando...' : 'Guardar Cambios' }}</span>
               </button>
             </div>
           </form>
@@ -508,6 +576,24 @@ import { PlantillasService } from '../../core/services/plantillas.service';
         color: #2563eb;
         border-color: rgba(59, 130, 246, 0.3);
       }
+
+      &.invoice-btn:hover {
+        background: rgba(16, 185, 129, 0.1);
+        color: #059669;
+        border-color: rgba(16, 185, 129, 0.3);
+      }
+
+      &.edit:hover {
+        background: rgba(245, 158, 11, 0.1);
+        color: #d97706;
+        border-color: rgba(245, 158, 11, 0.3);
+      }
+
+      &.delete:hover {
+        background: rgba(239, 68, 68, 0.1);
+        color: #dc2626;
+        border-color: rgba(239, 68, 68, 0.3);
+      }
     }
 
     /* Modal */
@@ -722,6 +808,16 @@ export class PagosListaComponent implements OnInit {
   mostrarModal = false;
   errorMensaje: string | null = null;
 
+  mostrarModalEditar = false;
+  pagoAEditar: PagoDetalleDto | null = null;
+  guardandoEdicion = false;
+  errorEdicion: string | null = null;
+
+  formEditar = this.fb.group({
+    estado: ['PENDIENTE' as EstadoPago, [Validators.required]],
+    observacion: ['']
+  });
+
   form = this.fb.group({
     idReserva: [null as number | null, [Validators.required]],
     monto: [0, [Validators.required, Validators.min(100)]],
@@ -878,6 +974,53 @@ export class PagosListaComponent implements OnInit {
         },
         error: (err) => {
           alert(err.error?.mensaje || 'Error al emitir reembolso');
+        }
+      });
+    }
+  }
+
+  abrirModalEditar(pago: PagoDetalleDto): void {
+    this.pagoAEditar = pago;
+    this.errorEdicion = null;
+    this.formEditar.reset({
+      estado: pago.estado,
+      observacion: ''
+    });
+    this.mostrarModalEditar = true;
+  }
+
+  cerrarModalEditar(): void {
+    this.mostrarModalEditar = false;
+    this.pagoAEditar = null;
+  }
+
+  guardarEdicionPago(): void {
+    if (this.formEditar.invalid || !this.pagoAEditar) return;
+    this.guardandoEdicion = true;
+    this.errorEdicion = null;
+    const { estado, observacion } = this.formEditar.value;
+
+    this.pagosService.modificar(this.pagoAEditar.idPago, estado || undefined, observacion || undefined).subscribe({
+      next: () => {
+        this.guardandoEdicion = false;
+        this.cerrarModalEditar();
+        this.cargarPagos();
+      },
+      error: (err) => {
+        this.guardandoEdicion = false;
+        this.errorEdicion = err.error?.mensaje || 'Error al actualizar el pago';
+      }
+    });
+  }
+
+  confirmarEliminar(pago: PagoDetalleDto): void {
+    if (confirm(`¿Está seguro de eliminar la transacción #PAG-${pago.idPago} con estado ${pago.estado}?`)) {
+      this.pagosService.eliminar(pago.idPago).subscribe({
+        next: () => {
+          this.cargarPagos();
+        },
+        error: (err) => {
+          alert(err.error?.mensaje || 'No fue posible eliminar la transacción');
         }
       });
     }

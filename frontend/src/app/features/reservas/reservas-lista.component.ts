@@ -146,8 +146,18 @@ import { PlantillasService } from '../../core/services/plantillas.service';
                     <button type="button" (click)="plantillasService.descargar('/api/plantillas/reserva/' + r.idReserva, 'comprobante-reserva-' + r.idReserva + '.pdf')" class="action-btn pdf-btn" title="Descargar Comprobante PDF (Voucher)">
                       <app-icon name="file-text" [size]="15"></app-icon>
                     </button>
+                    <button type="button" (click)="plantillasService.descargar('/api/plantillas/factura/' + r.idReserva, 'factura-reserva-' + r.idReserva + '.pdf')" class="action-btn invoice-btn" title="Descargar Factura de Reserva (PDF)">
+                      <app-icon name="dollar-sign" [size]="15"></app-icon>
+                    </button>
                     <button type="button" *ngIf="tieneMenores(r)" (click)="plantillasService.descargar('/api/plantillas/autorizacion-menor/' + r.idReserva, 'autorizacion-menores-' + r.idReserva + '.pdf')" class="action-btn minor-btn" title="Descargar Autorización para Menores (PDF)">
                       <app-icon name="shield" [size]="15"></app-icon>
+                    </button>
+                    <button
+                      *ngIf="r.estado === 'PENDIENTE'"
+                      class="action-btn edit"
+                      (click)="abrirModalEditarParticipantes(r)"
+                      title="Editar participantes">
+                      <app-icon name="users" [size]="15"></app-icon>
                     </button>
                     <button
                       *ngIf="r.saldoPendiente > 0 && r.estado !== 'CANCELADA'"
@@ -162,6 +172,13 @@ import { PlantillasService } from '../../core/services/plantillas.service';
                       (click)="abrirModalCancelar(r)"
                       title="Cancelar reserva (RN08)">
                       <app-icon name="ban" [size]="15"></app-icon>
+                    </button>
+                    <button
+                      *ngIf="r.estado === 'PENDIENTE'"
+                      class="action-btn delete"
+                      (click)="confirmarEliminarReserva(r)"
+                      title="Eliminar reserva pendiente">
+                      <app-icon name="trash" [size]="15"></app-icon>
                     </button>
                   </div>
                 </td>
@@ -424,6 +441,10 @@ import { PlantillasService } from '../../core/services/plantillas.service';
                 <app-icon name="file-text" [size]="16"></app-icon>
                 <span>Descargar Voucher (PDF)</span>
               </button>
+              <button type="button" (click)="plantillasService.descargar('/api/plantillas/factura/' + reservaDetalle.idReserva, 'factura-reserva-' + reservaDetalle.idReserva + '.pdf')" class="btn btn-secondary">
+                <app-icon name="dollar-sign" [size]="16"></app-icon>
+                <span>Factura Oficial (PDF)</span>
+              </button>
               <button type="button" *ngIf="tieneMenores(reservaDetalle)" (click)="plantillasService.descargar('/api/plantillas/autorizacion-menor/' + reservaDetalle.idReserva, 'autorizacion-menores-' + reservaDetalle.idReserva + '.pdf')" class="btn btn-secondary">
                 <app-icon name="shield" [size]="16"></app-icon>
                 <span>Autorización Menores (PDF)</span>
@@ -551,6 +572,65 @@ import { PlantillasService } from '../../core/services/plantillas.service';
               </button>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- MODAL EDITAR PARTICIPANTES -->
+      <div class="modal-backdrop" *ngIf="reservaParaEditarPax" (click)="cerrarModalEditarPax()">
+        <div class="modal-dialog modal-lg" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <div>
+              <h3 class="modal-title">Editar Participantes #RES-{{ reservaParaEditarPax.idReserva }}</h3>
+              <p class="modal-subtitle">Actualice los nombres y edades de los pasajeros acreditados (RN06/RN14)</p>
+            </div>
+            <button class="close-btn" (click)="cerrarModalEditarPax()">
+              <app-icon name="x" [size]="18"></app-icon>
+            </button>
+          </div>
+
+          <form [formGroup]="formEditarPax" (ngSubmit)="guardarEditarPax()" class="modal-body">
+            <div class="pax-list-wrap">
+              <div class="pax-header">
+                <span class="pax-count">Listado de Pasajeros ({{ participantesEditarArray.length }})</span>
+                <button type="button" class="btn btn-secondary btn-sm" (click)="agregarParticipanteEditar()">
+                  <app-icon name="plus" [size]="14"></app-icon>
+                  <span>Agregar Pasajero</span>
+                </button>
+              </div>
+
+              <div formArrayName="participantes" class="pax-rows">
+                <div *ngFor="let p of participantesEditarArray.controls; let i = index" [formGroupName]="i" class="pax-row">
+                  <div class="pax-idx">#{{ i + 1 }}</div>
+                  <div class="form-group flex-1">
+                    <label class="form-label" *ngIf="i === 0">Nombre Completo *</label>
+                    <input type="text" formControlName="nombre" class="form-control" placeholder="Nombre del pasajero" />
+                  </div>
+                  <div class="form-group w-90">
+                    <label class="form-label" *ngIf="i === 0">Edad *</label>
+                    <input type="number" formControlName="edad" class="form-control" min="1" max="120" />
+                  </div>
+                  <button type="button" class="btn-remove-pax" [disabled]="participantesEditarArray.length <= 1" (click)="removerParticipanteEditar(i)" title="Eliminar fila">
+                    <app-icon name="trash" [size]="14"></app-icon>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="errorEditarPax" class="error-alert">
+              <app-icon name="alert" [size]="16"></app-icon>
+              <span>{{ errorEditarPax }}</span>
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" (click)="cerrarModalEditarPax()">
+                Cancelar
+              </button>
+              <button type="submit" class="btn btn-primary" [disabled]="formEditarPax.invalid || guardandoEditarPax">
+                <app-icon name="check" [size]="16"></app-icon>
+                <span>{{ guardandoEditarPax ? 'Guardando...' : 'Actualizar Participantes' }}</span>
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
@@ -794,6 +874,24 @@ import { PlantillasService } from '../../core/services/plantillas.service';
       }
 
       &.cancel:hover {
+        background: rgba(239, 68, 68, 0.1);
+        color: #dc2626;
+        border-color: rgba(239, 68, 68, 0.3);
+      }
+
+      &.invoice-btn:hover {
+        background: rgba(16, 185, 129, 0.1);
+        color: #059669;
+        border-color: rgba(16, 185, 129, 0.3);
+      }
+
+      &.edit:hover {
+        background: rgba(245, 158, 11, 0.1);
+        color: #d97706;
+        border-color: rgba(245, 158, 11, 0.3);
+      }
+
+      &.delete:hover {
         background: rgba(239, 68, 68, 0.1);
         color: #dc2626;
         border-color: rgba(239, 68, 68, 0.3);
@@ -1229,6 +1327,18 @@ export class ReservasListaComponent implements OnInit {
   errorMensaje: string | null = null;
   salidaSeleccionadaObj: SalidaTour | null = null;
 
+  reservaParaEditarPax: ReservaDetalleDto | null = null;
+  guardandoEditarPax = false;
+  errorEditarPax: string | null = null;
+
+  formEditarPax = this.fb.group({
+    participantes: this.fb.array([])
+  });
+
+  get participantesEditarArray(): FormArray {
+    return this.formEditarPax.get('participantes') as FormArray;
+  }
+
   // Formularios reactivos
   formReserva = this.fb.group({
     idSalida: [null as number | null, [Validators.required]],
@@ -1531,5 +1641,78 @@ export class ReservasListaComponent implements OnInit {
         alert(err.error?.mensaje || 'Error al cancelar reserva');
       }
     });
+  }
+
+  abrirModalEditarParticipantes(r: ReservaDetalleDto): void {
+    this.reservaParaEditarPax = r;
+    this.errorEditarPax = null;
+    this.participantesEditarArray.clear();
+
+    if (r.participantes && r.participantes.length > 0) {
+      r.participantes.forEach(p => {
+        this.agregarParticipanteEditar(p.nombre, p.edad);
+      });
+    } else {
+      this.agregarParticipanteEditar('', 18);
+    }
+  }
+
+  cerrarModalEditarPax(): void {
+    this.reservaParaEditarPax = null;
+  }
+
+  agregarParticipanteEditar(nombre = '', edad = 18): void {
+    this.participantesEditarArray.push(
+      this.fb.group({
+        nombre: [nombre, [Validators.required, Validators.minLength(2)]],
+        edad: [edad, [Validators.required, Validators.min(1), Validators.max(120)]]
+      })
+    );
+  }
+
+  removerParticipanteEditar(index: number): void {
+    if (this.participantesEditarArray.length > 1) {
+      this.participantesEditarArray.removeAt(index);
+    }
+  }
+
+  guardarEditarPax(): void {
+    if (this.formEditarPax.invalid || !this.reservaParaEditarPax) return;
+
+    const paxs = this.participantesEditarArray.value as { nombre: string; edad: number }[];
+    const hayMenor = paxs.some(p => p.edad < 18);
+    const hayAdulto = paxs.some(p => p.edad >= 18);
+    if (hayMenor && !hayAdulto) {
+      this.errorEditarPax = 'Si incluye menores de 18 años, debe registrar al menos un adulto acompañante (RN06)';
+      return;
+    }
+
+    this.guardandoEditarPax = true;
+    this.errorEditarPax = null;
+
+    this.reservasService.modificar(this.reservaParaEditarPax.idReserva, paxs).subscribe({
+      next: () => {
+        this.guardandoEditarPax = false;
+        this.cerrarModalEditarPax();
+        this.cargarReservas();
+      },
+      error: (err) => {
+        this.guardandoEditarPax = false;
+        this.errorEditarPax = err.error?.mensaje || 'Error al actualizar los participantes de la reserva';
+      }
+    });
+  }
+
+  confirmarEliminarReserva(r: ReservaDetalleDto): void {
+    if (confirm(`¿Está seguro de eliminar permanentemente la reserva #RES-${r.idReserva}?`)) {
+      this.reservasService.eliminar(r.idReserva).subscribe({
+        next: () => {
+          this.cargarReservas();
+        },
+        error: (err) => {
+          alert(err.error?.mensaje || 'No fue posible eliminar la reserva');
+        }
+      });
+    }
   }
 }

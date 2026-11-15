@@ -36,4 +36,12 @@ export class ReservasService {
       params: { motivo: motivo || 'Cancelación solicitada por el usuario' }
     });
   }
+
+  modificar(id: number, participantes: { nombre: string; edad: number }[]): Observable<ReservaDetalleDto> {
+    return this.http.put<ReservaDetalleDto>(`${this.apiUrl}/${id}`, participantes);
+  }
+
+  eliminar(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
 }

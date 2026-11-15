@@ -25,4 +25,15 @@ export class PagosService {
   reembolsar(idPago: number): Observable<PagoDetalleDto> {
     return this.http.post<PagoDetalleDto>(`${this.apiUrl}/${idPago}/reembolsar`, null);
   }
+
+  modificar(idPago: number, estado?: EstadoPago, observacion?: string): Observable<PagoDetalleDto> {
+    let params = new HttpParams();
+    if (estado) params = params.set('estado', estado);
+    if (observacion) params = params.set('observacion', observacion);
+    return this.http.put<PagoDetalleDto>(`${this.apiUrl}/${idPago}`, null, { params });
+  }
+
+  eliminar(idPago: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${idPago}`);
+  }
 }

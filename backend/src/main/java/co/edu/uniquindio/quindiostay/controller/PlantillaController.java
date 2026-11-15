@@ -38,9 +38,13 @@ public class PlantillaController {
     }
 
     @GetMapping("/factura/{id}")
-    @Operation(summary = "Factura de reserva (alias oficial)")
+    @Operation(summary = "Factura oficial de reserva con detalle de pagos y saldos")
     public ResponseEntity<byte[]> facturaReserva(@PathVariable Long id) {
-        return comprobanteReserva(id);
+        byte[] pdf = plantillaPdfService.generarFacturaReserva(id);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=Factura_Reserva_" + id + ".pdf")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdf);
     }
 
     @GetMapping("/autorizacion-menor/{idReserva}")

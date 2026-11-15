@@ -120,14 +120,30 @@ import { AuthService } from '../../core/auth/auth.service';
             <div class="notif-footer">
               <app-pill-estado [estado]="n.estado"></app-pill-estado>
 
-              <button
-                *ngIf="n.estado !== 'LEIDA'"
-                class="btn-mark-read"
-                (click)="marcarComoLeida(n)"
-                title="Marcar como leída">
-                <app-icon name="check" [size]="14"></app-icon>
-                <span>Marcar como leída</span>
-              </button>
+              <div class="notif-actions">
+                <button
+                  *ngIf="n.estado !== 'LEIDA'"
+                  class="btn-mark-read"
+                  (click)="marcarComoLeida(n)"
+                  title="Marcar como leída">
+                  <app-icon name="check" [size]="14"></app-icon>
+                  <span>Marcar como leída</span>
+                </button>
+                <button
+                  *ngIf="esPersonalInterno()"
+                  class="action-btn edit"
+                  (click)="abrirModalEditar(n)"
+                  title="Editar notificación">
+                  <app-icon name="edit" [size]="14"></app-icon>
+                </button>
+                <button
+                  *ngIf="esPersonalInterno()"
+                  class="action-btn delete"
+                  (click)="confirmarEliminar(n)"
+                  title="Eliminar notificación">
+                  <app-icon name="trash" [size]="14"></app-icon>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -216,6 +232,78 @@ import { AuthService } from '../../core/auth/auth.service';
               <button type="submit" class="btn btn-primary" [disabled]="form.invalid || guardando">
                 <app-icon name="check" [size]="16"></app-icon>
                 <span>{{ guardando ? 'Programando...' : 'Programar Notificación' }}</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- MODAL EDITAR NOTIFICACIÓN -->
+      <div class="modal-backdrop" *ngIf="mostrarModalEditar" (click)="cerrarModalEditar()">
+        <div class="modal-dialog" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <div>
+              <h3 class="modal-title">Editar Notificación #{{ notifAEditar?.idNotificacion }}</h3>
+              <p class="modal-subtitle">Modificar mensaje, tipo, canal o fecha programada</p>
+            </div>
+            <button class="close-btn" (click)="cerrarModalEditar()">
+              <app-icon name="x" [size]="18"></app-icon>
+            </button>
+          </div>
+
+          <form [formGroup]="formEditar" (ngSubmit)="guardarEdicion()" class="modal-body">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Tipo de Notificación <span class="req">*</span></label>
+                <select formControlName="tipo" class="form-control">
+                  <option value="RECORDATORIO_RESERVA">Recordatorio de Salida</option>
+                  <option value="CONFIRMACION_RESERVA">Confirmación de Reserva</option>
+                  <option value="CONFIRMACION_PAGO">Confirmación de Pago</option>
+                  <option value="CAMBIO_ESTADO">Cambio de Estado</option>
+                  <option value="PROMOCION">Oferta / Promoción</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Canal de Envío <span class="req">*</span></label>
+                <select formControlName="canal" class="form-control">
+                  <option value="CORREO">Correo Electrónico</option>
+                  <option value="WHATSAPP">WhatsApp</option>
+                  <option value="SMS">SMS</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Fecha Programada <span class="req">*</span></label>
+              <input
+                type="datetime-local"
+                formControlName="fechaProgramada"
+                class="form-control" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Mensaje / Contenido <span class="req">*</span></label>
+              <textarea
+                formControlName="mensaje"
+                rows="4"
+                placeholder="Escribe el mensaje de la notificación..."
+                class="form-control">
+              </textarea>
+            </div>
+
+            <div *ngIf="errorEdicion" class="error-alert">
+              <app-icon name="alert" [size]="16"></app-icon>
+              <span>{{ errorEdicion }}</span>
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" (click)="cerrarModalEditar()">
+                Cancelar
+              </button>
+              <button type="submit" class="btn btn-primary" [disabled]="formEditar.invalid || guardandoEdicion">
+                <app-icon name="check" [size]="16"></app-icon>
+                <span>{{ guardandoEdicion ? 'Actualizando...' : 'Guardar Cambios' }}</span>
               </button>
             </div>
           </form>
@@ -439,6 +527,38 @@ import { AuthService } from '../../core/auth/auth.service';
       margin-top: 4px;
     }
 
+    .notif-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .action-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      border: 1px solid var(--color-border);
+      background: #ffffff;
+      color: var(--color-ink-muted);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &.edit:hover {
+        background: rgba(245, 158, 11, 0.1);
+        color: #d97706;
+        border-color: rgba(245, 158, 11, 0.3);
+      }
+
+      &.delete:hover {
+        background: rgba(239, 68, 68, 0.1);
+        color: #dc2626;
+        border-color: rgba(239, 68, 68, 0.3);
+      }
+    }
+
     .btn-mark-read {
       display: inline-flex;
       align-items: center;
@@ -618,6 +738,18 @@ export class NotificacionesListaComponent implements OnInit {
   mostrarModal = false;
   errorMensaje: string | null = null;
 
+  mostrarModalEditar = false;
+  notifAEditar: NotificacionDto | null = null;
+  guardandoEdicion = false;
+  errorEdicion: string | null = null;
+
+  formEditar = this.fb.group({
+    tipo: ['RECORDATORIO_RESERVA' as TipoNotificacion, [Validators.required]],
+    canal: ['CORREO' as CanalNotificacion, [Validators.required]],
+    fechaProgramada: ['', [Validators.required]],
+    mensaje: ['', [Validators.required, Validators.minLength(5)]]
+  });
+
   form = this.fb.group({
     idCliente: [null as number | null, [Validators.required]],
     tipo: ['RECORDATORIO_RESERVA' as TipoNotificacion, [Validators.required]],
@@ -756,5 +888,75 @@ export class NotificacionesListaComponent implements OnInit {
         console.error('Error al marcar leída', err);
       }
     });
+  }
+
+  esPersonalInterno(): boolean {
+    return this.authService.esAdmin() || this.authService.esOperador() || this.authService.esEncargado();
+  }
+
+  abrirModalEditar(n: NotificacionDto): void {
+    this.notifAEditar = n;
+    this.errorEdicion = null;
+    let fProg = '';
+    if (n.fechaProgramada) {
+      try {
+        fProg = new Date(n.fechaProgramada).toISOString().substring(0, 16);
+      } catch {
+        fProg = n.fechaProgramada.substring(0, 16);
+      }
+    }
+    this.formEditar.reset({
+      tipo: n.tipo,
+      canal: n.canal,
+      fechaProgramada: fProg,
+      mensaje: n.mensaje
+    });
+    this.mostrarModalEditar = true;
+  }
+
+  cerrarModalEditar(): void {
+    this.mostrarModalEditar = false;
+    this.notifAEditar = null;
+  }
+
+  guardarEdicion(): void {
+    if (this.formEditar.invalid || !this.notifAEditar) return;
+    this.guardandoEdicion = true;
+    this.errorEdicion = null;
+    const v = this.formEditar.value;
+
+    const req: CrearNotificacionRequest = {
+      idCliente: this.notifAEditar.idCliente,
+      idReserva: this.notifAEditar.idReserva || undefined,
+      tipo: v.tipo as TipoNotificacion,
+      canal: v.canal as CanalNotificacion,
+      fechaProgramada: v.fechaProgramada!,
+      mensaje: v.mensaje!
+    };
+
+    this.notificacionesService.modificar(this.notifAEditar.idNotificacion, req).subscribe({
+      next: () => {
+        this.guardandoEdicion = false;
+        this.cerrarModalEditar();
+        this.cargarNotificaciones();
+      },
+      error: (err) => {
+        this.guardandoEdicion = false;
+        this.errorEdicion = err.error?.mensaje || 'Error al actualizar la notificación';
+      }
+    });
+  }
+
+  confirmarEliminar(n: NotificacionDto): void {
+    if (confirm(`¿Está seguro de eliminar la notificación #${n.idNotificacion}?`)) {
+      this.notificacionesService.eliminar(n.idNotificacion).subscribe({
+        next: () => {
+          this.cargarNotificaciones();
+        },
+        error: (err) => {
+          alert(err.error?.mensaje || 'Error al eliminar la notificación');
+        }
+      });
+    }
   }
 }

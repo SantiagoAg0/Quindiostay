@@ -24,4 +24,12 @@ export class NotificacionesService {
   marcarLeida(id: number): Observable<NotificacionDto> {
     return this.http.put<NotificacionDto>(`${this.apiUrl}/${id}/leida`, null);
   }
+
+  modificar(id: number, request: CrearNotificacionRequest): Observable<NotificacionDto> {
+    return this.http.put<NotificacionDto>(`${this.apiUrl}/${id}`, request);
+  }
+
+  eliminar(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
 }
