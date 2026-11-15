@@ -219,5 +219,4 @@ Todos los reportes están implementados mediante consultas SQL nativas de alto r
 - **Sin Triggers**: Toda la lógica de negocio y validación de transiciones está centralizada en los servicios de Spring Boot, preservando la portabilidad del motor de base de datos.
 - **Nombres Estándar de Restricciones**: Restricciones bautizadas con prefijos oficiales (`pk_`, `uq_`, `ck_`, `fk_`).
 - **Respuesta de Conflictos (409)**: Cualquier intento de eliminar o alterar entidades maestras en uso por llaves foráneas retorna un código HTTP 409 con mensaje explicativo, impidiendo errores 500 no controlados.
-- **Zero Emojis**: Interfaz gráfica corporativa y limpia basada en iconografía SVG vectorial.
 - **Descargas Seguras**: Todos los botones de PDF realizan peticiones autenticadas vía interceptor JWT liberando los objetos URL tras la descarga.
